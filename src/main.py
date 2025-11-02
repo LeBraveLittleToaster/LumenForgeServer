@@ -1,3 +1,6 @@
+import math
+import ssl
+import time
 import tkinter as tk
 from tkinter import ttk, messagebox
 
@@ -5,7 +8,9 @@ import asyncio
 import threading
 from typing import Optional
 
+import urllib3
 from pyartnet import ArtNetNode
+import requests
 # from pyartnet.base import channel   # not needed explicitly here
 
 # ----------------------------
@@ -13,9 +18,9 @@ from pyartnet import ArtNetNode
 # ----------------------------
 ARTNET_IP = "192.168.178.99"
 ARTNET_PORT = 6454
-NUM_LEDS = 1  # mirrors your code
-FPS = 30      # ~30Hz
-FADE_MS = 50  # your add_fade duration
+NUM_LEDS = 1
+FPS = 30
+FADE_MS = 50
 FRAME_SLEEP = 1 / FPS
 
 # IMPORTANT: WLED TURN ON: >>MAIN SEGMENTS ONLY<<
@@ -101,11 +106,17 @@ class ArtNetWorker:
 
             # Run indefinitely until stop() called
             count = 0
+            freq = 1.0
+            t = 0.0
             while not self._stop_event.is_set():
                 # Build payload like your original: [100, 255, 255, 0] per LED
                 aggr = []
                 for _ in range(NUM_LEDS):
-                    aggr.extend([100, 255, 255, 0])
+                    phase = math.pi * 2
+                    mod = (math.sin(2 * math.pi * freq * t + phase) + 1) / 2  # range 0–1
+                    value = int(mod * 255)
+                    aggr.extend([value, 255, 255, 0])
+                    print("Sending value=" + str(value))
 
                 # Send with fade and wait until the fade has been applied
                 channel.add_fade(aggr, FADE_MS)
@@ -113,7 +124,7 @@ class ArtNetWorker:
 
                 # Throttle
                 await asyncio.sleep(FRAME_SLEEP)
-
+                t = time.time()
                 count += 1
                 if count % FPS == 0:
                     self._on_status(f"Running... frames sent ~{count}")
@@ -169,6 +180,7 @@ class App(tk.Tk):
                 validate="key",
                 validatecommand=v_int,
             ).grid(row=i, column=1, sticky="w", padx=(0, pad), pady=4)
+            ttk.Button(inputs, text="Send", command=lambda i=i, var=var: self.on_send(i, var.get())).grid(row=i, column=2)
 
         # Buttons
         btns = ttk.Frame(root)
@@ -210,6 +222,27 @@ class App(tk.Tk):
             self.stop_sender()
         finally:
             self.destroy()
+
+    def on_send(self, row, value):
+        params = "?"
+        if row == 0:
+            params +=("dmxAddress=" + value + "&")
+        if row == 1:
+            params +=("dmxUniverse=" + value + "&")
+        if row == 2:
+            params += ("dmxInputType=" + value + "&")
+        if row == 3:
+            params += ("dmxMode=" + value + "&")
+        params = params[:-1]
+        try:
+            session = requests.Session()
+            session.auth = ("admin", "secret")
+            url = f"https://192.168.178.99/internal" + params
+            print(f"URL {url}")
+            contents = session.get(url, verify=False)
+            print(f"Row {row}: {contents}")
+        finally:
+            print(f"Sent request for row {row} with value {value}")
 
     # ----------------------------
     # Helpers
