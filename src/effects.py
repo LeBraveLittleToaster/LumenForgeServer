@@ -1,5 +1,6 @@
 from __future__ import annotations
 import math
+import time
 from enum import Enum, auto
 import random
 from typing import List
@@ -48,7 +49,6 @@ class EffectEngine:
 
     def render(self, t: float) -> List[int]:
         leds = self.state.leds
-
         if self.effect == EffectType.STATIC:
             v = self.state.static_level
             return pack_rgbw_frame(leds, v, v, v, 0)

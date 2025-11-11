@@ -184,16 +184,29 @@ class ArtNetModel:
 
     def _run(self):
         frame_time = 1.0 / self.fps
+        last_t = time.perf_counter()
+        max_delta = 0
+        min_delta = 900000
         while self._running:
-            t = time.perf_counter() - self._t0
-            frame = self.engine.render(t)
+            cur_t = time.perf_counter()
+            t_delta = cur_t - last_t
+            if t_delta < frame_time:
+                continue
+            t_total =  cur_t - self._t0
+
+            last_t = cur_t
+            if t_delta < min_delta:
+                min_delta = t_delta
+            if t_delta > max_delta:
+                max_delta = t_delta
+            frame = self.engine.render(t_total)
 
             def _write():
                 if self._channel is not None:
+                    print("Min: " + str(min_delta) + " | Max: " + str(max_delta))
                     self._channel.add_fade(frame, 0)  # immediate write
 
             try:
                 self._loopthread.run_in_loop(_write)
             except RuntimeError:
                 pass
-            time.sleep(frame_time)
