@@ -1,6 +1,7 @@
 from __future__ import annotations
 import math
 from enum import Enum, auto
+import random
 from typing import List
 
 from .dmx import pack_rgbw_frame
@@ -47,10 +48,6 @@ class EffectEngine:
 
     def render(self, t: float) -> List[int]:
         leds = self.state.leds
-        frame = []
-        for i in range(30):
-            frame.extend([255])
-        return frame
 
         if self.effect == EffectType.STATIC:
             v = self.state.static_level
@@ -73,11 +70,19 @@ class EffectEngine:
             leds = self.state.leds
             if leds <= 0:
                 return []
-            idx = int(t * self.state.chase_freq) % leds
+            led_idx = int(t * self.state.chase_freq) % leds
+            random.seed(led_idx + 900)
+            color_idx = random.randint(0, 2)
             frame = []
+
             for i in range(leds):
-                if i == idx:
-                    frame.extend([255, 255, 255, 255, 0])
+                if i == led_idx:
+                    if color_idx == 0:
+                        frame.extend([255, 255, 0,0, 0])
+                    if color_idx == 1:
+                        frame.extend([255, 0, 255, 0, 0])
+                    if color_idx == 2:
+                        frame.extend([255, 0, 0, 255, 0])
                 else:
                     frame.extend([0, 0, 0, 0, 0])
 

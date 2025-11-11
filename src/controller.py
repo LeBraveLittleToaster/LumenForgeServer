@@ -28,18 +28,23 @@ class Controller:
 
         label = PLAYER_MAP[player_id]
         if label == "SNAP_ON":
+            print("SETTING EFFECT: [STATIC FULL]")
             self.model.set_effect(EffectType.STATIC)
             self.model.set_static_level(255)
         elif label == "SNAP_OFF":
+            print("SETTING EFFECT: [STATIC OFF]")
             self.model.set_effect(EffectType.STATIC)
             self.model.set_static_level(0)
         elif label == "BOUNCY":
+            print("SETTING EFFECT: [BOUNCY]")
             self.model.set_effect(EffectType.BOUNCY)
             self.model.set_bouncy_freq(freq)
         elif label == "GRADIENT":
+            print("SETTING EFFECT: [GRADIENT]")
             self.model.set_effect(EffectType.GRADIENT)
             self.model.set_gradient_speed(freq)
         elif label == "CHASE":
+            print("SETTING EFFECT: [CHASE]")
             self.model.set_effect(EffectType.CHASE)
             self.model.set_chase_freq(freq)
 
