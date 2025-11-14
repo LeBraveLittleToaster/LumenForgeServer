@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ArtnetSender.iml" filepath="$PROJECT_DIR$/.idea/ArtnetSender.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/sender.main.iml" filepath="$PROJECT_DIR$/.idea/modules/sender.main.iml" />
     </modules>
   </component>
 </project>
