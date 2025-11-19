@@ -3,37 +3,37 @@ package de.pschiessle.artnet.sender.artnet;
 import ch.bildspur.artnet.ArtNetClient;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-
-import static de.pschiessle.artnet.sender.effects.EffectManager.DMX_UNIVERSE_SIZE;
+import java.util.HashMap;
 
 @Service
+@Slf4j
 public class ArtnetClient {
 
     ArtNetClient artnet = new ArtNetClient();
 
+    private final DeviceService deviceService;
 
+    public ArtnetClient(DeviceService deviceService) {
+        this.deviceService = deviceService;
+    }
 
     @PostConstruct
     public void start() {
-        // Start ArtNet client once
         artnet.start();
     }
 
-    /**
-     * Public API: enqueue a DMX frame.
-     * Any length is accepted; it will be normalized to 512 bytes.
-     */
     public void sendDMX(byte[] data) {
         if (data == null) {
             return;
         }
-        artnet.unicastDmx("localhost", 0, 0, data);
-        artnet.unicastDmx("192.168.178.99", 0, 0, data);
+        deviceService.getDevicesByIsActive(true).forEach((device) -> {
+            artnet.unicastDmx(device.getArtnetUrl(), device.getArtnetSubnet(), device.getArtnetUniverse(), data);
+        });
     }
 
 

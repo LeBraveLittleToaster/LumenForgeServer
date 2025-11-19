@@ -1,5 +1,7 @@
 package de.pschiessle.artnet.sender.artnet;
 
+import de.pschiessle.artnet.sender.utils.TimeUtil;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -7,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -17,6 +20,7 @@ public class DeviceService {
     public DeviceService(DeviceRepository deviceRepository) {
         this.deviceRepository = deviceRepository;
     }
+
 
     public List<DeviceDTO> getAllDevices() {
         List<DeviceDTO> devices = new ArrayList<>();
@@ -32,13 +36,15 @@ public class DeviceService {
         return deviceRepository.findDeviceDTOByUuid(uuid);
     }
 
+    @Cacheable(value = "active_devices_cache")
     public List<DeviceDTO> getDevicesByIsActive(Boolean isActive) {
         return deviceRepository.findDeviceDTOSByIsActive(isActive).orElseGet(ArrayList::new);
     }
 
     public DeviceDTO createDevice(DeviceDTO deviceDTO) {
-        LocalDateTime now = LocalDateTime.now();
-        deviceDTO.setId(null); // ensure new entity
+        LocalDateTime now = TimeUtil.getCurrentUtc();
+        deviceDTO.setId(null);
+        deviceDTO.setUuid(UUID.randomUUID().toString());
         deviceDTO.setCreatedAt(now);
         deviceDTO.setUpdatedAt(now);
         return deviceRepository.save(deviceDTO);
@@ -51,8 +57,9 @@ public class DeviceService {
             existing.setName(deviceDTO.getName());
             existing.setArtnetUrl(deviceDTO.getArtnetUrl());
             existing.setArtnetPort(deviceDTO.getArtnetPort());
-            existing.setDateOfBirth(deviceDTO.getDateOfBirth());
-            existing.setUpdatedAt(LocalDateTime.now());
+            existing.setArtnetSubnet(deviceDTO.getArtnetSubnet());
+            existing.setArtnetUniverse(deviceDTO.getArtnetUniverse());
+            existing.setUpdatedAt(TimeUtil.getCurrentUtc());
             return deviceRepository.save(existing);
         });
     }

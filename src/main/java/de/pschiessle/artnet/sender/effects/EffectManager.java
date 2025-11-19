@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.pschiessle.artnet.sender.artnet.ArtnetClient;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class EffectManager {
     private final ArtnetClient artnetClient;
 
@@ -32,7 +34,7 @@ public class EffectManager {
 
     @PostConstruct
     public void start() {
-        System.out.println("Starting EffectManager");
+        log.info("Starting EffectManager");
         lastMillis = System.currentTimeMillis();
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "artnet-dmx-sender");
@@ -61,15 +63,13 @@ public class EffectManager {
      */
     private void sendLoop() {
         if(curEffect != null){
-            var dmx = curEffect.render(System.currentTimeMillis());
-            System.out.println(Arrays.toString(dmx));
-            artnetClient.sendDMX(dmx);
+            artnetClient.sendDMX(curEffect.render(System.currentTimeMillis()));
         }
     }
 
 
     public void setEffect(EffectType effectType, JsonNode optionsJson) {
         curEffect = EffectBuilder.createEffectFromTypeAndJson(effectType, optionsJson).orElse(null);
-        System.out.println("Setting effect: " + effectType);
+        log.info("Setting effect: " + effectType);
     }
 }

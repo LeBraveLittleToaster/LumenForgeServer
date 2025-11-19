@@ -39,7 +39,7 @@ public class DeviceController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<DeviceDTO> createDevice(@RequestBody DeviceDTO deviceDTO) {
         DeviceDTO created = deviceService.createDevice(deviceDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);

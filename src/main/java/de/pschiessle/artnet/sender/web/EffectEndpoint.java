@@ -3,6 +3,7 @@ package de.pschiessle.artnet.sender.web;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.pschiessle.artnet.sender.effects.EffectManager;
 import de.pschiessle.artnet.sender.effects.EffectType;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +11,7 @@ import java.awt.*;
 
 @RestController()
 @RequestMapping("/effects")
+@Slf4j
 public class EffectEndpoint {
 
 
@@ -23,9 +25,9 @@ public class EffectEndpoint {
     void setEffectFromId(@PathVariable("id") String effectId, @RequestBody JsonNode options) {
         try {
             effectManager.setEffect(EffectType.values()[Integer.parseInt(effectId)], options);
-            System.out.println("Setting EffectId=" + effectId + " | options=" + options.toPrettyString() );
+            log.info("Setting EffectId={} | options={}", effectId, options.toPrettyString());
         } catch (Exception _) {
-            System.out.println("Failed to parse EffectType");
+            log.info("Failed to parse EffectType");
         }
     }
 }
