@@ -6,5 +6,5 @@ public enum EffectType {
     RUNNING, // 2
     STROBE, // 3
     STATIC_COLOR, // 4
-
+    COLOR_RAMP, // 5
 }

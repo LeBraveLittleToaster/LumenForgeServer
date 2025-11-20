@@ -34,6 +34,19 @@ public class EffectBuilder {
         }
     }
 
+    private static Optional<Effect> createColorRamp(JsonNode jsonNode){
+        log.info("NODE DATA:");
+        log.info(String.valueOf(jsonNode));
+        try {
+            double speed = jsonNode.get("speed").asDouble();
+            int lightCount = jsonNode.get("ledCount").asInt();
+            return Optional.of(new ColorRampEffect(speed, lightCount));
+        }catch (Exception e) {
+            log.info("COLOR_RAMP: Failed to obtain speed, offset and lightCount");
+            return Optional.empty();
+        }
+    }
+
     private static Optional<Effect> createStrobeEffect(JsonNode jsonNode){
         log.info("NODE DATA:");
         log.info(String.valueOf(jsonNode));
@@ -71,6 +84,7 @@ public class EffectBuilder {
             case RUNNING -> createRunningEffect(jsonNode);
             case STROBE -> createStrobeEffect(jsonNode);
             case STATIC_COLOR -> createColorEffect(jsonNode);
+            case COLOR_RAMP -> createColorRamp(jsonNode);
             default -> Optional.empty();
         };
     }
