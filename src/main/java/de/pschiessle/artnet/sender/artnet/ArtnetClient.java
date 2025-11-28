@@ -31,14 +31,15 @@ public class ArtnetClient {
         if (data == null) {
             return;
         }
+        /*
         artnet.unicastDmx("localhost", 0,0, data);
         artnet.unicastDmx("192.168.178.99", 0,0, data);
-        /*
+        */
         deviceService.getDevicesByIsActive(true).forEach((device) -> {
             artnet.unicastDmx(device.getArtnetUrl(), device.getArtnetSubnet(), device.getArtnetUniverse(), data);
         });
 
-         */
+
     }
 
 
