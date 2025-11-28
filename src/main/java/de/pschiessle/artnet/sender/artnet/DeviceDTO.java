@@ -26,6 +26,9 @@ public class DeviceDTO implements Serializable {
     @Column(nullable = false)
     private Boolean isActive;
 
+    @Column(nullable = false)
+    private Boolean isDmxOTAV1Compatible;
+
     @Column(nullable = false, unique = true)
     private String name;
 
@@ -40,6 +43,9 @@ public class DeviceDTO implements Serializable {
 
     @Column(nullable = false)
     private Integer artnetSubnet;
+
+    @Column(nullable = false)
+    private String x509Certificate;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

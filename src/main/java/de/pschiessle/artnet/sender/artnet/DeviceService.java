@@ -1,6 +1,8 @@
 package de.pschiessle.artnet.sender.artnet;
 
 import de.pschiessle.artnet.sender.utils.TimeUtil;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +15,7 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@Slf4j
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
@@ -36,6 +39,10 @@ public class DeviceService {
         return deviceRepository.findDeviceDTOByUuid(uuid);
     }
 
+    public Optional<List<DeviceDTO>> getDeviceByIsDmxOTAV1Compatible(Boolean isDmxOTAV1Compatible) {
+        return deviceRepository.findDeviceDTOByIsDmxOTAV1Compatible(isDmxOTAV1Compatible);
+    }
+
     @Cacheable(value = "active_devices_cache")
     public List<DeviceDTO> getDevicesByIsActive(Boolean isActive) {
         return deviceRepository.findDeviceDTOSByIsActive(isActive).orElseGet(ArrayList::new);
@@ -52,13 +59,13 @@ public class DeviceService {
 
     public Optional<DeviceDTO> updateDevice(Long id, DeviceDTO deviceDTO) {
         return deviceRepository.findById(id).map(existing -> {
-            existing.setUuid(deviceDTO.getUuid());
-            existing.setIsActive(deviceDTO.getIsActive());
-            existing.setName(deviceDTO.getName());
-            existing.setArtnetUrl(deviceDTO.getArtnetUrl());
-            existing.setArtnetPort(deviceDTO.getArtnetPort());
-            existing.setArtnetSubnet(deviceDTO.getArtnetSubnet());
-            existing.setArtnetUniverse(deviceDTO.getArtnetUniverse());
+            if(deviceDTO.getUuid() != null) existing.setUuid(deviceDTO.getUuid());
+            if(deviceDTO.getIsActive() != null) existing.setIsActive(deviceDTO.getIsActive());
+            if(deviceDTO.getName() != null) existing.setName(deviceDTO.getName());
+            if(deviceDTO.getArtnetUrl() != null) existing.setArtnetUrl(deviceDTO.getArtnetUrl());
+            if(deviceDTO.getArtnetPort() != null) existing.setArtnetPort(deviceDTO.getArtnetPort());
+            if(deviceDTO.getArtnetSubnet() != null) existing.setArtnetSubnet(deviceDTO.getArtnetSubnet());
+            if(deviceDTO.getArtnetUniverse() != null) existing.setArtnetUniverse(deviceDTO.getArtnetUniverse());
             existing.setUpdatedAt(TimeUtil.getCurrentUtc());
             return deviceRepository.save(existing);
         });
@@ -66,5 +73,38 @@ public class DeviceService {
 
     public void deleteDevice(Long id) {
         deviceRepository.deleteById(id);
+    }
+
+    @PostConstruct
+    public void populateDatabase() {
+        log.info("Populating database...");
+
+        DeviceDTO localDeviceDTO = new DeviceDTO();
+        localDeviceDTO.setName("My Local Device");
+        localDeviceDTO.setIsActive(true);
+        localDeviceDTO.setIsDmxOTAV1Compatible(true);
+        localDeviceDTO.setArtnetUrl("192.168.178.99");
+        localDeviceDTO.setArtnetUniverse(0);
+        localDeviceDTO.setArtnetPort(6454);
+        localDeviceDTO.setArtnetSubnet(0);
+        localDeviceDTO   .setX509Certificate("");
+        createDevice(localDeviceDTO);
+
+        for(int i = 0; i < 110; i++) {
+            DeviceDTO deviceDTO = new DeviceDTO();
+            deviceDTO.setName("Test Device" + i);
+            deviceDTO.setIsActive(false);
+            deviceDTO.setIsDmxOTAV1Compatible(true);
+            deviceDTO.setArtnetUrl("localhost");
+            deviceDTO.setArtnetUniverse(0);
+            deviceDTO.setArtnetPort(6454);
+            deviceDTO.setArtnetSubnet(0);
+            deviceDTO.setX509Certificate("");
+            createDevice(deviceDTO);
+        }
+
+
+
+        log.info("Populated database complete.");
     }
 }

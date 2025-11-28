@@ -33,6 +33,12 @@ public class DeviceController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
     }
 
+    @GetMapping("/DmxOTAV1/devices/")
+    public List<DeviceDTO> getDmxOTAV1CompliantDeviceList() {
+        return deviceService.getDeviceByIsDmxOTAV1Compatible(Boolean.TRUE)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Devices not found"));
+    }
+
     @GetMapping("/uuid/{uuid}")
     public DeviceDTO getDeviceByUuid(@PathVariable String uuid) {
         return deviceService.getDeviceByUuid(uuid)

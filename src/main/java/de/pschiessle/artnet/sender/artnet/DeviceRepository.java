@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface DeviceRepository extends CrudRepository<DeviceDTO, Long> {
     Optional<DeviceDTO> findDeviceDTOByUuid(String uuid);
     Optional<List<DeviceDTO>> findDeviceDTOSByIsActive(Boolean isActive);
+    Optional<List<DeviceDTO>> findDeviceDTOByIsDmxOTAV1Compatible(Boolean isDmxOTAV1Compatible);
 }
