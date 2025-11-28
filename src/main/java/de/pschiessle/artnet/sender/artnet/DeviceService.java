@@ -90,7 +90,7 @@ public class DeviceService {
         localDeviceDTO   .setX509Certificate("");
         createDevice(localDeviceDTO);
 
-        for(int i = 0; i < 110; i++) {
+        for(int i = 0; i < 20; i++) {
             DeviceDTO deviceDTO = new DeviceDTO();
             deviceDTO.setName("Test Device" + i);
             deviceDTO.setIsActive(false);
