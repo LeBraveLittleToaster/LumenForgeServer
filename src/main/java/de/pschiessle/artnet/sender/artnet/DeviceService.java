@@ -83,11 +83,10 @@ public class DeviceService {
         localDeviceDTO.setName("My Local Device");
         localDeviceDTO.setIsActive(true);
         localDeviceDTO.setIsDmxOTAV1Compatible(true);
-        localDeviceDTO.setArtnetUrl("192.168.178.99");
+        localDeviceDTO.setArtnetUrl("esp32.local");
         localDeviceDTO.setArtnetUniverse(0);
         localDeviceDTO.setArtnetPort(6454);
         localDeviceDTO.setArtnetSubnet(0);
-        localDeviceDTO   .setX509Certificate("");
         createDevice(localDeviceDTO);
 
         for(int i = 0; i < 20; i++) {
@@ -99,11 +98,8 @@ public class DeviceService {
             deviceDTO.setArtnetUniverse(0);
             deviceDTO.setArtnetPort(6454);
             deviceDTO.setArtnetSubnet(0);
-            deviceDTO.setX509Certificate("");
             createDevice(deviceDTO);
         }
-
-
 
         log.info("Populated database complete.");
     }

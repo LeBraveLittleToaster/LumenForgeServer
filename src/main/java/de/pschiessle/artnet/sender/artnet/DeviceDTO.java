@@ -43,10 +43,6 @@ public class DeviceDTO implements Serializable {
 
     @Column(nullable = false)
     private Integer artnetSubnet;
-
-    @Column(nullable = false)
-    private String x509Certificate;
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
