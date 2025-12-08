@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>IoT Projects</title>
+    <meta charset="UTF-8">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-4">
+    <h1 class="mb-4">IoT Projects</h1>
+
+    <p>
+        <a th:href="@{/web/projects/new}" class="btn btn-primary">
+            Create New Project
+        </a>
+    </p>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>UUID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>mDNS Domain</th>
+                    <th>External Repository</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="p : ${projects}">
+                    <td th:text="${p.id}">1</td>
+                    <td th:text="${p.uuid}">uuid</td>
+                    <td th:text="${p.name}">Name</td>
+                    <td th:text="${p.description}">Description</td>
+                    <td th:text="${p.mdnsDomain}">example.local</td>
+                    <td>
+                        <a th:href="${p.externalRepositoryLink}"
+                           th:text="${p.externalRepositoryLink}"
+                           target="_blank">
+                            repo-link
+                        </a>
+                    </td>
+                    <td th:text="${#temporals.format(p.createdAt, 'yyyy-MM-dd HH:mm')}">created</td>
+                    <td th:text="${#temporals.format(p.updatedAt, 'yyyy-MM-dd HH:mm')}">updated</td>
+                    <td class="d-flex gap-2">
+                        <a th:href="@{'/web/projects/' + ${p.id} + '/edit'}"
+                           class="btn btn-sm btn-warning">
+                            Edit
+                        </a>
+
+                        <form th:action="@{'/web/projects/' + ${p.id} + '/delete'}"
+                              method="post">
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete this project?');">
+                                Delete
+                            </button>
+                        </form>
+                        <form th:action="@{'/web/projects/' + ${p.id} + '/genHTTPS'}"
+                              method="post">
+                            <button type="submit"
+                                    class="btn btn-sm btn-info">
+                                Get Keys
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS (optional for your page, required for modals, etc.) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

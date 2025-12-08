@@ -1,4 +1,4 @@
-package de.pschiessle.artnet.sender.artnet;
+package de.pschiessle.artnet.sender.devices;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

@@ -1,13 +1,11 @@
-package de.pschiessle.artnet.sender.artnet;
+package de.pschiessle.artnet.sender.devices;
 
-import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor

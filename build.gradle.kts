@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation("ch.bildspur:artnet4j:0.6.2")
+
     implementation ("org.springframework.boot:spring-boot-starter-actuator")
     implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
@@ -33,7 +33,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation ("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.springframework.boot:spring-boot-docker-compose")
+
+    implementation("ch.bildspur:artnet4j:0.6.2")
     implementation("org.postgresql:postgresql:42.7.8")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.79")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.79")
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

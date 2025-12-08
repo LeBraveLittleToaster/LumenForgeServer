@@ -1,4 +1,4 @@
-package de.pschiessle.artnet.sender.artnet;
+package de.pschiessle.artnet.sender.devices;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

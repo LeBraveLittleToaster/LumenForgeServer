@@ -1,14 +1,13 @@
 package de.pschiessle.artnet.sender.web;
 
-import de.pschiessle.artnet.sender.artnet.DeviceDTO;
-import de.pschiessle.artnet.sender.artnet.DeviceService;
+import de.pschiessle.artnet.sender.devices.DeviceDTO;
+import de.pschiessle.artnet.sender.devices.DeviceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.http.HttpClient;

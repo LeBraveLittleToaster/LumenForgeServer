@@ -1,14 +1,11 @@
 package de.pschiessle.artnet.sender.artnet;
 
 import ch.bildspur.artnet.ArtNetClient;
+import de.pschiessle.artnet.sender.devices.DeviceService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
 
 @Service
 @Slf4j

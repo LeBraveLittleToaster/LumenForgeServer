@@ -1,7 +1,7 @@
 package de.pschiessle.artnet.sender.web;
 
-import de.pschiessle.artnet.sender.artnet.DeviceDTO;
-import de.pschiessle.artnet.sender.artnet.DeviceService;
+import de.pschiessle.artnet.sender.devices.DeviceDTO;
+import de.pschiessle.artnet.sender.devices.DeviceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,7 +24,7 @@ public class DeviceViewController {
     public String listDevices(Model model) {
         List<DeviceDTO> devices = deviceService.getAllDevices();
         model.addAttribute("devices", devices);
-        return "devices";
+        return "device/devices";
     }
 
     @GetMapping("/create")
@@ -38,7 +38,7 @@ public class DeviceViewController {
         device.setName("Test Device");
         model.addAttribute("device", device);
         model.addAttribute("mode", "create");
-        return "device-form";
+        return "device/device-form";
     }
 
     @GetMapping("/{id}")
@@ -46,7 +46,7 @@ public class DeviceViewController {
         DeviceDTO device = deviceService.getDeviceById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Device not found"));
         model.addAttribute("device", device);
-        return "device-detail";
+        return "device/device-detail";
     }
 
 

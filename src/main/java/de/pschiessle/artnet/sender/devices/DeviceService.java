@@ -1,4 +1,4 @@
-package de.pschiessle.artnet.sender.artnet;
+package de.pschiessle.artnet.sender.devices;
 
 import de.pschiessle.artnet.sender.utils.TimeUtil;
 import jakarta.annotation.PostConstruct;
