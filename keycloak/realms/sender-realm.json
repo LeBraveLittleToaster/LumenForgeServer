@@ -1,0 +1,79 @@
+{
+  "realm": "artnet",
+  "enabled": true,
+
+  "displayName": "Sender",
+  "loginTheme": "",
+  "accountTheme": "",
+  "adminTheme": "",
+  "emailTheme": "",
+
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "resetPasswordAllowed": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+
+  "roles": {
+    "realm": [
+      { "name": "user",  "description": "Regular user" },
+      { "name": "admin", "description": "Administrator" },
+      { "name": "owner", "description": "Instance owner / superuser" }
+    ]
+  },
+
+  "groups": [
+    {
+      "name": "users",
+      "realmRoles": ["user"]
+    },
+    {
+      "name": "admins",
+      "realmRoles": ["admin"]
+    },
+    {
+      "name": "owners",
+      "realmRoles": ["owner", "admin"]
+    }
+  ],
+
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "User",
+      "email": "alice@example.com",
+      "groups": ["users"],
+      "credentials": [
+        { "type": "password", "value": "alice123", "temporary": false }
+      ]
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Admin",
+      "email": "bob@example.com",
+      "groups": ["admins"],
+      "credentials": [
+        { "type": "password", "value": "bob123", "temporary": false }
+      ]
+    },
+    {
+      "username": "olivia",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Olivia",
+      "lastName": "Owner",
+      "email": "olivia@example.com",
+      "groups": ["owners"],
+      "credentials": [
+        { "type": "password", "value": "olivia123", "temporary": false }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,11 @@
+import java.time.Duration
+
+
 plugins {
     java
     id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.avast.gradle.docker-compose") version "0.17.10"
 }
 
 group = "de.pschiessle.artnet"
@@ -49,3 +53,17 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.named("test") {
+    dependsOn("composeUp")
+    // finalizedBy("composeDown")
+}
+
+dockerCompose {
+    useComposeFiles.set(listOf("docker-compose.yml"))
+
+    isRequiredBy(tasks.named("test"))
+
+    waitForHealthyStateTimeout.set(Duration.ofMinutes(3))
+}
+
