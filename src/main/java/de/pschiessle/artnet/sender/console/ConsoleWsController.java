@@ -1,5 +1,7 @@
 package de.pschiessle.artnet.sender.console;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -20,12 +22,11 @@ public class ConsoleWsController {
     }
 
     @MessageMapping("/slider/set/{channelId}")
-    public void setSliderValue(@DestinationVariable int channelId, int value) {
-        Optional<Integer> updatedValueOpt = consoleService.setChannelValue(channelId, value);
-        // broadcast changed value
+    public void setSliderValue(@DestinationVariable int channelId, ValueUpdateMessage<Integer> value) {
+        Optional<Integer> updatedValueOpt = consoleService.setChannelValue(channelId, value.value());
         updatedValueOpt
                 .ifPresent(updated ->
-                        messagingTemplate.convertAndSend("/topic/slider/set/" + channelId, updated)
+                        messagingTemplate.convertAndSend("/topic/slider/set/" + channelId, new ValueUpdateResponse<>(value.clientId(), updated))
                 );
     }
 }

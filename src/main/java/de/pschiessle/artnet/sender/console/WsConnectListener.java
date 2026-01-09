@@ -26,6 +26,5 @@ public class WsConnectListener {
                         "/topic/slider/set/" + channel.channelIndex,
                         channel.getValue()
                 ));
-
     }
 }
