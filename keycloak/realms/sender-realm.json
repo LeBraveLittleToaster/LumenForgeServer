@@ -1,8 +1,8 @@
 {
-  "realm": "artnet",
+  "realm": "lumenforge-realm",
   "enabled": true,
 
-  "displayName": "Sender",
+  "displayName": "Lumenforge Backend",
   "loginTheme": "",
   "accountTheme": "",
   "adminTheme": "",
@@ -17,25 +17,16 @@
 
   "roles": {
     "realm": [
-      { "name": "user",  "description": "Regular user" },
-      { "name": "admin", "description": "Administrator" },
-      { "name": "owner", "description": "Instance owner / superuser" }
+      { "name": "REALM_USER",  "description": "Regular user" },
+      { "name": "REALM_ADMIN", "description": "Administrator" },
+      { "name": "REALM_OWNER", "description": "Instance owner / superuser" }
     ]
   },
 
   "groups": [
-    {
-      "name": "users",
-      "realmRoles": ["user"]
-    },
-    {
-      "name": "admins",
-      "realmRoles": ["admin"]
-    },
-    {
-      "name": "owners",
-      "realmRoles": ["owner", "admin"]
-    }
+    { "name": "users", "realmRoles": ["REALM_USER"] },
+    { "name": "admins", "realmRoles": ["REALM_ADMIN"] },
+    { "name": "owners", "realmRoles": ["REALM_OWNER", "REALM_ADMIN"] }
   ],
 
   "users": [
@@ -74,6 +65,29 @@
       "credentials": [
         { "type": "password", "value": "olivia123", "temporary": false }
       ]
+    }
+  ],
+
+  "clients": [
+    {
+      "clientId": "lumenforge",
+      "name": "lumenforge",
+      "enabled": true,
+
+      "protocol": "openid-connect",
+      "publicClient": true,
+
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["+"],
+
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
     }
   ]
 }
