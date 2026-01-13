@@ -1,5 +1,5 @@
 import java.time.Duration
-
+import org.gradle.internal.os.OperatingSystem
 
 plugins {
     java
@@ -50,7 +50,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    "developmentOnly"("org.springframework.boot:spring-boot-devtools")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -58,16 +58,19 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.named("test") {
-    dependsOn("composeUp")
-    // finalizedBy("composeDown")
-}
-
 dockerCompose {
     useComposeFiles.set(listOf("docker-compose.yml"))
+    useDockerComposeV2.set(true)
+    if (OperatingSystem.current().isMacOsX) {
+        dockerExecutable.set(
+            listOf(
+                "/opt/homebrew/bin/docker",
+                "/usr/local/bin/docker"
+            ).first { file(it).exists() }
+        )
+    }
 
     isRequiredBy(tasks.named("test"))
 
-    waitForHealthyStateTimeout.set(Duration.ofMinutes(3))
+    waitForHealthyStateTimeout.set(Duration.ofSeconds(30))
 }
-

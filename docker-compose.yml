@@ -76,10 +76,11 @@ services:
     command: ["start-dev", "--import-realm"]
     ports:
       - "8080:8080"
+      - "9000:9000"
     volumes:
       - ./keycloak/realms:/opt/keycloak/data/import:ro
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200'"]
+      test: [ 'CMD-SHELL', "java -classpath /opt/keycloak/lib/quarkus-run.jar -Djava.net.preferIPv4Stack=true - <<'JAVA'\nimport java.net.*;import java.io.*;\npublic class Main{public static void main(String[]a)throws Exception{\n  URL u=new URL(\"http://127.0.0.1:9000/health/ready\");\n  HttpURLConnection c=(HttpURLConnection)u.openConnection();\n  c.setConnectTimeout(2000);c.setReadTimeout(2000);\n  c.connect();\n  int code=c.getResponseCode();\n  if(code!=200) System.exit(1);\n}}\nJAVA"      ]
       interval: 15s
       timeout: 5s
       retries: 10

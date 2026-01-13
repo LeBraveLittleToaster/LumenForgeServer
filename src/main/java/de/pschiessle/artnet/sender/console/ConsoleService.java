@@ -15,10 +15,10 @@ public class ConsoleService {
     }
 
     public synchronized Optional<Integer> setChannelValue(int channelIndex, int value) {
-        return console.setChannelValueIfPossible(channelIndex, value);
+        return console.setSliderValueIfPossible(channelIndex, value);
     }
 
-    public Channel[] getChannelSnapshot() {
-        return console.getChannelsClone();
+    public Slider[] getChannelSnapshot() {
+        return console.getSliderClone();
     }
 }
