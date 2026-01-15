@@ -21,10 +21,13 @@ public class WsConnectListener {
 
     @EventListener
     public void onConnect(SessionConnectedEvent event) {
+        /*
         Arrays.stream(consoleService.getChannelSnapshot())
                 .forEach(channel -> messagingTemplate.convertAndSend(
                         "/topic/slider/set/" + channel.channelIndex,
                         channel.getValue()
                 ));
+
+         */
     }
 }

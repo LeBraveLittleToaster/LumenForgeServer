@@ -23,10 +23,13 @@ public class ConsoleWsController {
 
     @MessageMapping("/slider/set/{channelId}")
     public void setSliderValue(@DestinationVariable int channelId, ValueUpdateMessage<Integer> value) {
+        /*
         Optional<Integer> updatedValueOpt = consoleService.setChannelValue(channelId, value.value());
         updatedValueOpt
                 .ifPresent(updated ->
                         messagingTemplate.convertAndSend("/topic/slider/set/" + channelId, new ValueUpdateResponse<>(value.clientId(), updated))
                 );
+
+         */
     }
 }

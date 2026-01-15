@@ -1,5 +1,6 @@
 package de.pschiessle.artnet.sender.console;
 
+import de.pschiessle.artnet.sender.console.persistent.Channel;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -8,10 +9,9 @@ public class ConsoleCreationTest {
 
     @Test
     public void creationTest(){
+
         var console = new Console(8);
 
-        for(Channel channel : console.getChannelsClone()) {
-            System.out.println(channel.channelIndex + " Value " + channel.getValue());
-        }
+
     }
 }

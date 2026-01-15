@@ -1,4 +1,5 @@
-package de.pschiessle.artnet.sender.console;
+package de.pschiessle.artnet.sender.console.persistent.gendefs;
+
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -6,17 +7,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DMXDevice {
+@Data
+@Entity
+public class EffectGenParam {
     @Id
     private Long id;
 
-    private int address;
+    private String key;
 
-    private int universe;
-
-    private String dnsName;
+    private float value;
 }

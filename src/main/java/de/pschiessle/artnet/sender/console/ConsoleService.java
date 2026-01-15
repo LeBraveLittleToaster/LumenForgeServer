@@ -1,6 +1,7 @@
 package de.pschiessle.artnet.sender.console;
 
 
+import de.pschiessle.artnet.sender.console.persistent.Channel;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,11 +15,4 @@ public class ConsoleService {
         this.console = console;
     }
 
-    public synchronized Optional<Integer> setChannelValue(int channelIndex, int value) {
-        return console.setChannelValueIfPossible(channelIndex, value);
-    }
-
-    public Channel[] getChannelSnapshot() {
-        return console.getChannelsClone();
-    }
 }

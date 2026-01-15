@@ -1,12 +1,12 @@
 package de.pschiessle.artnet.sender.console;
 
-public class Channel {
+public class Slider {
 
     public static int CHANNEL_MAX_VALUE = 255;
     public final int channelIndex;
     private int value = 0;
 
-    public Channel(int channelIndex){
+    public Slider(int channelIndex){
         this.channelIndex = channelIndex;
     }
 
