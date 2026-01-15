@@ -68,6 +68,6 @@ dockerCompose {
 
     isRequiredBy(tasks.named("test"))
 
-    waitForHealthyStateTimeout.set(Duration.ofMinutes(3))
+    waitForHealthyStateTimeout.set(Duration.ofSeconds(15))
 }
 

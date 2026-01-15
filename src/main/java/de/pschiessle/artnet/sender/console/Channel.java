@@ -3,7 +3,6 @@ package de.pschiessle.artnet.sender.console;
 public class Channel {
 
     public static int CHANNEL_MAX_VALUE = 255;
-
     public final int channelIndex;
     private int value = 0;
 
