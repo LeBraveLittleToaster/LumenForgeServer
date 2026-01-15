@@ -58,11 +58,6 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-tasks.named("test") {
-    dependsOn("composeUp")
-    // finalizedBy("composeDown")
-}
-
 dockerCompose {
     useComposeFiles.set(listOf("docker-compose.yml"))
 
