@@ -2,23 +2,18 @@ package de.pschiessle.artnet.sender.console.realtime.effectfuncs;
 
 public abstract class EffectFunc {
 
-    private int dmxAddress = 0;
 
-    public EffectFunc(int dmxAddress) {
-        this.dmxAddress = dmxAddress;
+    public EffectFunc() {
+
     }
 
-    protected int getDmxAddress() {
-        return this.dmxAddress;
+    public byte[] runEffect(double level, long currentMillis, long deltaMillis){
+        return new byte[512];
     }
 
-    public int[] runEffect(long currentTimeMillis, int[] dmxValues){
-        return new int[512];
-    }
-
-    protected int[] clampToDMXRange(int[] dmxValues) {
-        for(int i = 0; i < dmxValues.length; i++){
-            dmxValues[i] = Math.clamp(dmxValues[i], 0, 255);
+    protected byte[] clampToDMXRange(byte[] dmxValues) {
+        for(byte i = 0; i < dmxValues.length; i++){
+            dmxValues[i] = (byte) Math.clamp(dmxValues[i], 0, 255);
         }
         return dmxValues;
     }

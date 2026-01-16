@@ -1,13 +1,10 @@
 package de.pschiessle.artnet.sender.console;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import org.springframework.boot.actuate.web.exchanges.HttpExchange;
+import de.pschiessle.artnet.sender.console.realtime.ConsoleService;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-
-import java.util.Optional;
 
 @Controller
 public class ConsoleWsController {

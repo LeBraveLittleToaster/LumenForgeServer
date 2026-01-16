@@ -1,11 +1,10 @@
 package de.pschiessle.artnet.sender.console;
 
+import de.pschiessle.artnet.sender.console.realtime.ConsoleService;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
-
-import java.util.Arrays;
 
 @Component
 public class WsConnectListener {
