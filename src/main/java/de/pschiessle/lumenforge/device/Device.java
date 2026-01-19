@@ -1,8 +1,8 @@
-package de.pschiessle.device;
+package de.pschiessle.lumenforge.device;
 
-import de.pschiessle.device.category.Category;
-import de.pschiessle.device.maintenancestatus.MaintenanceStatus;
-import de.pschiessle.device.vendor.Vendor;
+import de.pschiessle.lumenforge.device.category.Category;
+import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
+import de.pschiessle.lumenforge.device.vendor.Vendor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -44,7 +45,7 @@ public class Device {
     private Vendor vendor;
 
     @Column(name = "purchase_price", precision = 12, scale = 2)
-    private java.math.BigDecimal purchasePrice;
+    private BigDecimal purchasePrice;
 
     @Column(name = "purchase_date")
     private java.time.LocalDate purchaseDate;

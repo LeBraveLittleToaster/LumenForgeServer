@@ -1,10 +1,10 @@
-package de.pschiessle.device;
+package de.pschiessle.lumenforge.device;
 
-import de.pschiessle.device.category.CategoryRepository;
-import de.pschiessle.device.maintenancestatus.MaintenanceStatus;
-import de.pschiessle.device.maintenancestatus.MaintenanceStatusRepository;
-import de.pschiessle.device.vendor.Vendor;
-import de.pschiessle.device.vendor.VendorRepository;
+import de.pschiessle.lumenforge.device.category.CategoryRepository;
+import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
+import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatusRepository;
+import de.pschiessle.lumenforge.device.vendor.Vendor;
+import de.pschiessle.lumenforge.device.vendor.VendorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

@@ -1,4 +1,4 @@
-package de.pschiessle.device;
+package de.pschiessle.lumenforge.device;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;

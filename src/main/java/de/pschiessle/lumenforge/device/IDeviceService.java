@@ -1,4 +1,4 @@
-package de.pschiessle.device;
+package de.pschiessle.lumenforge.device;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

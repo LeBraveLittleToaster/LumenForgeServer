@@ -1,6 +1,5 @@
-package de.pschiessle.device;
+package de.pschiessle.lumenforge.device;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,11 +12,13 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/user/devices")
-@RequiredArgsConstructor
 public class DeviceController {
 
     private final DeviceServiceImpl deviceService;
 
+    public DeviceController(DeviceServiceImpl deviceService) {
+        this.deviceService = deviceService;
+    }
 
     @GetMapping()
     public Page<DeviceResponseDTO> getPage(

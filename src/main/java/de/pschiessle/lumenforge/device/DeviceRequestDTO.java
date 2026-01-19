@@ -1,4 +1,4 @@
-package de.pschiessle.device;
+package de.pschiessle.lumenforge.device;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
