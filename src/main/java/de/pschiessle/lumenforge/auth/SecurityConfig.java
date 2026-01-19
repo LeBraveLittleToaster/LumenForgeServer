@@ -50,8 +50,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_PATHS).permitAll()
                         .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/api/v1/user/**").hasAuthority("user")
-                        .requestMatchers("/api/v1/admin/**").hasAuthority("admin")
+                        .requestMatchers("/api/v1/user/**").hasAnyAuthority("REALM_USER", "REALM_ADMIN", "REALM_OWNER")
+                        .requestMatchers("/api/v1/admin/**").hasAnyAuthority("REALM_ADMIN", "REALM_OWNER")
                         .anyRequest().authenticated()
                 ).sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
