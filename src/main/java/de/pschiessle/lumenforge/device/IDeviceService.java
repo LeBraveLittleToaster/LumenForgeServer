@@ -15,6 +15,7 @@ public interface IDeviceService {
 
     Device create(DeviceRequestDTO request);
     Device update(Long id, DeviceRequestDTO request);
+    public Page<Device> getPage(Pageable pageable, String q);
 
     void delete(Long id);
 }

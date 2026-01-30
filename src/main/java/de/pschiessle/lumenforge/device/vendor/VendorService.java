@@ -1,5 +1,6 @@
 package de.pschiessle.lumenforge.device.vendor;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,23 +9,57 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class VendorService {
 
-    private final VendorRepository vendorRepository;
+    private final VendorRepository repository;
 
-    public Page<Vendor> getVendors(Pageable pageable) {
-        return vendorRepository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public Page<Vendor> getAll(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
-    public Page<Vendor> searchVendorsBySimilarity(String query, Pageable pageable) {
-        if (query == null) {
+    @Transactional(readOnly = true)
+    public Page<Vendor> search(String query, Pageable pageable) {
+        if (query == null || query.trim().isEmpty()) {
             return Page.empty(pageable);
         }
-        String q = query.trim();
-        if (q.isEmpty()) {
-            return Page.empty(pageable);
+        return repository.searchByNameSimilarity(query.trim(), pageable);
+    }
+
+    public Vendor create(VendorRequestDTO request) {
+        Vendor vendor = new Vendor();
+        applyRequest(vendor, request);
+        return repository.save(vendor);
+    }
+
+    public Vendor update(Long id, VendorRequestDTO request) {
+        Vendor vendor = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: id=" + id));
+        applyRequest(vendor, request);
+        return repository.save(vendor);
+    }
+
+    public void delete(Long id) {
+        Vendor vendor = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Vendor not found: id=" + id));
+        repository.delete(vendor);
+    }
+
+    @Transactional(readOnly = true)
+    public long getCount() {
+        return repository.count();
+    }
+
+    private void applyRequest(Vendor vendor, VendorRequestDTO request) {
+        String name = normalizeRequired(request.name(), "Vendor.name");
+        vendor.setName(name);
+    }
+
+    private String normalizeRequired(String value, String field) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(field + " must not be blank");
         }
-        return vendorRepository.searchByNameSimilarity(q, pageable);
+        return value.trim();
     }
 }

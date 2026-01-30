@@ -58,7 +58,7 @@ public class Device {
     )
     private List<Category> categories;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "maintenance_status_id", nullable = false)
     private MaintenanceStatus maintenanceStatus;
 

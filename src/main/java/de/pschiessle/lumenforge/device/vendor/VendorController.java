@@ -19,7 +19,7 @@ public class VendorController {
     public ResponseEntity<Page<Vendor>> getVendors(
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(vendorService.getVendors(pageable));
+        return ResponseEntity.ok(vendorService.getAll(pageable));
     }
 
     // GET /api/vendors/search?query=acm&page=0&size=20
@@ -28,6 +28,6 @@ public class VendorController {
             @RequestParam("query") String query,
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(vendorService.searchVendorsBySimilarity(query, pageable));
+        return ResponseEntity.ok(vendorService.search(query, pageable));
     }
 }

@@ -20,17 +20,19 @@ public class DeviceController {
         this.deviceService = deviceService;
     }
 
-    @GetMapping()
-    public Page<DeviceResponseDTO> getPage(
-            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        return deviceService.getPage(pageable).map(DeviceResponseDTO::from);
-    }
-
     @GetMapping("/{id}")
     public DeviceResponseDTO getById(@PathVariable Long id) {
         return DeviceResponseDTO.from(deviceService.getById(id));
     }
+
+    @GetMapping
+    public Page<DeviceResponseDTO> getPage(
+            @RequestParam(required = false) String q,
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return deviceService.getPage(pageable, q).map(DeviceResponseDTO::from);
+    }
+
 
     @GetMapping("/by-uuid/{uuid}")
     public DeviceResponseDTO getByUuid(@PathVariable UUID uuid) {

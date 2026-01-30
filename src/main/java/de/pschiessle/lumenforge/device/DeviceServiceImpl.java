@@ -7,6 +7,7 @@ import de.pschiessle.lumenforge.device.vendor.Vendor;
 import de.pschiessle.lumenforge.device.vendor.VendorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+@Primary
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -71,7 +73,26 @@ public class DeviceServiceImpl implements IDeviceService {
         deviceRepository.delete(device);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Device> getPage(Pageable pageable, String q) {
+        if (q == null || q.isBlank()) {
+            return deviceRepository.findAll(pageable);
+        }
+        String needle = q.trim();
+        return deviceRepository
+                .findByNameContainingIgnoreCaseOrSerialNumberContainingIgnoreCase(needle, needle, pageable);
+    }
+
+
     private void applyRequest(Device device, DeviceRequestDTO request) {
+        if (request.vendorId() == null) {
+            throw new IllegalArgumentException("Device.vendorId must not be null");
+        }
+        if (request.maintenanceStatusId() == null) {
+            throw new IllegalArgumentException("Device.maintenanceStatusId must not be null");
+        }
+
         device.setSerialNumber(request.serialNumber());
         device.setName(request.name());
         device.setDescription(request.description());
@@ -87,10 +108,9 @@ public class DeviceServiceImpl implements IDeviceService {
                 .orElseThrow(() -> new EntityNotFoundException("MaintenanceStatus not found: id=" + request.maintenanceStatusId()));
         device.setMaintenanceStatus(ms);
 
-        if (request.categoryIds() != null) {
-            device.setCategories(categoryRepository.findAllById(request.categoryIds()));
-        } else {
-            device.setCategories(List.of());
-        }
+        device.setCategories(
+                request.categoryIds() != null ? categoryRepository.findAllById(request.categoryIds()) : List.of()
+        );
     }
+
 }
