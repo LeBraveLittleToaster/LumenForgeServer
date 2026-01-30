@@ -8,10 +8,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @SpringBootApplication
 @EnableCaching
 @EnableWebSecurity
-public class SenderApplication {
+public class LumenForgeApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SenderApplication.class, args);
+		SpringApplication.run(LumenForgeApplication.class, args);
 	}
 
 }

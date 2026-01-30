@@ -11,11 +11,11 @@ plugins {
 
 group = "de.pschiessle.artnet"
 version = "0.0.1-SNAPSHOT"
-description = "Sender for Artnet Lights"
+description = "Inventory System for Event"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 

@@ -1,6 +1,6 @@
 package de.pschiessle.lumenforge.device;
 
-import de.pschiessle.lumenforge.SenderApplication;
+import de.pschiessle.lumenforge.LumenForgeApplication;
 import de.pschiessle.lumenforge.device.category.CategoryRepository;
 import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
 import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatusRepository;
@@ -21,7 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@ContextConfiguration(classes = SenderApplication.class)
+@ContextConfiguration(classes = LumenForgeApplication.class)
 class DeviceRepositoryTest {
 
     @Autowired

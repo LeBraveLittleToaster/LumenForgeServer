@@ -1,11 +1,9 @@
 package de.pschiessle.lumenforge.device.maintenancestatus;
 
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import de.pschiessle.lumenforge.SenderApplication;
+import de.pschiessle.lumenforge.LumenForgeApplication;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@ContextConfiguration(classes = SenderApplication.class)
+@ContextConfiguration(classes = LumenForgeApplication.class)
 class MaintenanceStatusRepositoryTest {
 
     @Autowired
