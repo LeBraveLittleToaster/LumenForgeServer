@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.testImplementation
 import java.time.Duration
 
 
@@ -40,29 +41,20 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
-
-
-    implementation("ch.bildspur:artnet4j:0.6.2")
     implementation("org.postgresql:postgresql:42.7.8")
     implementation("org.bouncycastle:bcprov-jdk18on:1.79")
     implementation("org.bouncycastle:bcpkix-jdk18on:1.79")
 
+    testImplementation("com.h2database:h2")
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    "developmentOnly"("org.springframework.boot:spring-boot-devtools")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-dockerCompose {
-    useComposeFiles.set(listOf("docker-compose.yml"))
-
-    isRequiredBy(tasks.named("test"))
-
-    waitForHealthyStateTimeout.set(Duration.ofSeconds(15))
 }
 
