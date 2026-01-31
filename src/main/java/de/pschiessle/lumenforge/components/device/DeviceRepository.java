@@ -15,7 +15,7 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     @Query("""
         select new de.pschiessle.lumenforge.components.device.dto.DeviceListWithStockDTO(
             d.uuid, d.name, d.serialNumber,
-            s.stockCount, s.stockUnitType
+            s.stockCount, s.stockUnitType,d.vendor.name as vendorName
         )
         from Device d
         left join Stock s on s.device.id = d.id

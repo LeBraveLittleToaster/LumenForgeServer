@@ -202,7 +202,8 @@ public class InitializeDatabaseService implements CommandLineRunner {
                     .skip(1) // header
                     .map(String::trim)
                     .filter(line -> !line.isEmpty())
-                    .map(name -> new VendorRequestDTO(name))
+                    .map(line -> line.split(",", 2))
+                    .map(name -> new VendorRequestDTO(name[0]))
                     .map(dto -> {
                         try {
                             return vendorService.create(dto);
