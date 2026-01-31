@@ -1,8 +1,8 @@
-package de.pschiessle.lumenforge.device;
+package de.pschiessle.lumenforge.components.device;
 
-import de.pschiessle.lumenforge.device.category.Category;
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
-import de.pschiessle.lumenforge.device.vendor.Vendor;
+import de.pschiessle.lumenforge.components.category.Category;
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatus;
+import de.pschiessle.lumenforge.components.vendor.Vendor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -64,6 +64,7 @@ public class Device {
 
     @OneToMany(mappedBy = "device", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeviceParameter> deviceParameters;
+
 
     @CreationTimestamp
     @Column(name = "create_date")

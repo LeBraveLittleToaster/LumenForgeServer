@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.vendor;
+package de.pschiessle.lumenforge.components.vendor;
 
 
 public record VendorRequestDTO(

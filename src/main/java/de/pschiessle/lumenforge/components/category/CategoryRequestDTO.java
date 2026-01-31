@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.category;
+package de.pschiessle.lumenforge.components.category;
 
 public record CategoryRequestDTO(
         String name,

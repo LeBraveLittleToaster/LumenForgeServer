@@ -1,10 +1,14 @@
-package de.pschiessle.lumenforge.device;
+package de.pschiessle.lumenforge.components.device;
 
-import de.pschiessle.lumenforge.device.category.CategoryRepository;
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatusRepository;
-import de.pschiessle.lumenforge.device.vendor.Vendor;
-import de.pschiessle.lumenforge.device.vendor.VendorRepository;
+import de.pschiessle.lumenforge.components.category.CategoryRepository;
+import de.pschiessle.lumenforge.components.device.dto.DeviceListDTO;
+import de.pschiessle.lumenforge.components.device.dto.DeviceListWithStockDTO;
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatus;
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatusRepository;
+import de.pschiessle.lumenforge.components.stock.Stock;
+import de.pschiessle.lumenforge.components.stock.StockRepository;
+import de.pschiessle.lumenforge.components.vendor.Vendor;
+import de.pschiessle.lumenforge.components.vendor.VendorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -26,12 +30,8 @@ public class DeviceServiceImpl implements IDeviceService {
     private final VendorRepository vendorRepository;
     private final CategoryRepository categoryRepository;
     private final MaintenanceStatusRepository maintenanceStatusRepository;
-
-    @Override
-    @Transactional(readOnly = true)
-    public Page<Device> getPage(Pageable pageable) {
-        return deviceRepository.findAll(pageable);
-    }
+    private final StockRepository stockRepository;
+    private final DeviceAssembler deviceAssembler;
 
     @Override
     @Transactional(readOnly = true)
@@ -56,7 +56,8 @@ public class DeviceServiceImpl implements IDeviceService {
     @Override
     public Device create(DeviceRequestDTO request) {
         Device device = new Device();
-        applyRequest(device, request);
+        Stock stock = new Stock();
+        deviceAssembler.applyCreate(device, stock, request);
         return deviceRepository.save(device);
     }
 
@@ -73,15 +74,19 @@ public class DeviceServiceImpl implements IDeviceService {
         deviceRepository.delete(device);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Page<DeviceListWithStockDTO> getPageWithStock(Pageable pageable, String q) {
+        String needle = (q == null) ? "" : q.trim();
+        return deviceRepository.findPageWithStock(needle, pageable);
+    }
+
+
     @Override
     @Transactional(readOnly = true)
-    public Page<Device> getPage(Pageable pageable, String q) {
-        if (q == null || q.isBlank()) {
-            return deviceRepository.findAll(pageable);
-        }
-        String needle = q.trim();
-        return deviceRepository
-                .findByNameContainingIgnoreCaseOrSerialNumberContainingIgnoreCase(needle, needle, pageable);
+    public Page<DeviceListDTO> getPage(Pageable pageable, String q) {
+        String needle = (q == null) ? "" : q.trim();
+        return deviceRepository.findPageAsListDTO(needle, pageable);
     }
 
 

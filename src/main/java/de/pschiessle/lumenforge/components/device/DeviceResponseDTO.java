@@ -1,6 +1,6 @@
-package de.pschiessle.lumenforge.device;
+package de.pschiessle.lumenforge.components.device;
 
-import de.pschiessle.lumenforge.device.category.Category;
+import de.pschiessle.lumenforge.components.category.Category;
 
 import java.math.BigDecimal;
 import java.time.Instant;

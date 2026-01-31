@@ -1,5 +1,7 @@
-package de.pschiessle.lumenforge.device;
+package de.pschiessle.lumenforge.components.device;
 
+import de.pschiessle.lumenforge.components.device.dto.DeviceListDTO;
+import de.pschiessle.lumenforge.components.device.dto.DeviceListWithStockDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -26,11 +28,15 @@ public class DeviceController {
     }
 
     @GetMapping
-    public Page<DeviceResponseDTO> getPage(
-            @RequestParam(required = false) String q,
-            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        return deviceService.getPage(pageable, q).map(DeviceResponseDTO::from);
+    public Page<DeviceListDTO> getPageBasic(@RequestParam(required = false) String q,
+                                            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return deviceService.getPage(pageable, q);
+    }
+
+    @GetMapping("/with-stock")
+    public Page<DeviceListWithStockDTO> getPageWithStock(@RequestParam(required = false) String q,
+                                                         @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return deviceService.getPageWithStock(pageable, q);
     }
 
 

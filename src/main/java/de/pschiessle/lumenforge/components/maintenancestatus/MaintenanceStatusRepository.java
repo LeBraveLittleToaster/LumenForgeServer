@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.maintenancestatus;
+package de.pschiessle.lumenforge.components.maintenancestatus;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.vendor;
+package de.pschiessle.lumenforge.components.vendor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

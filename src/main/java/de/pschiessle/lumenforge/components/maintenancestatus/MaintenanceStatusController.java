@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.category;
+package de.pschiessle.lumenforge.components.maintenancestatus;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,22 +9,22 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/categories")
-public class CategoryController {
+@RequestMapping("/api/maintenance-statuses")
+public class MaintenanceStatusController {
 
-    private final CategoryService service;
+    private final MaintenanceStatusService service;
 
-    // GET /api/categories?page=0&size=20&sort=name,asc
+    // GET /api/maintenance-statuses?page=0&size=20&sort=name,asc
     @GetMapping
-    public ResponseEntity<Page<Category>> getAll(
+    public ResponseEntity<Page<MaintenanceStatus>> getAll(
             @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(service.getAll(pageable));
     }
 
-    // GET /api/categories/search?query=network
+    // GET /api/maintenance-statuses/search?query=maint
     @GetMapping("/search")
-    public ResponseEntity<Page<Category>> search(
+    public ResponseEntity<Page<MaintenanceStatus>> search(
             @RequestParam String query,
             @PageableDefault(size = 20) Pageable pageable
     ) {

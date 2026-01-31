@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.category;
+package de.pschiessle.lumenforge.components.maintenancestatus;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -8,8 +8,8 @@ import org.hibernate.annotations.UuidGenerator;
 @Getter
 @Setter
 @Entity
-@Table(name = "device_categories")
-public class Category {
+@Table(name = "maintenance_status")
+public class MaintenanceStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,4 +23,5 @@ public class Category {
 
     @Column(name = "description")
     private String description;
+
 }

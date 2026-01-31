@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device;
+package de.pschiessle.lumenforge.components.device;
 
 import jakarta.persistence.*;
 

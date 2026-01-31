@@ -1,4 +1,4 @@
-package de.pschiessle.lumenforge.device.maintenancestatus;
+package de.pschiessle.lumenforge.components.maintenancestatus;
 
 public record MaintenanceStatusRequestDTO(
         String name,

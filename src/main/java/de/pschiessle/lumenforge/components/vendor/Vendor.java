@@ -1,15 +1,14 @@
-package de.pschiessle.lumenforge.device.maintenancestatus;
+package de.pschiessle.lumenforge.components.vendor;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.annotations.UuidGenerator;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name = "maintenance_status")
-public class MaintenanceStatus {
+@Table(name = "vendor")
+public class Vendor {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,10 +17,6 @@ public class MaintenanceStatus {
     @Column(name = "uuid", nullable = false, unique = true, updatable = false, length = 36)
     private String uuid;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false, unique = true)
     private String name;
-
-    @Column(name = "description")
-    private String description;
-
 }

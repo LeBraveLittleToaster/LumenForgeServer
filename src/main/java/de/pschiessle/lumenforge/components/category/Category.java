@@ -1,14 +1,15 @@
-package de.pschiessle.lumenforge.device.vendor;
+package de.pschiessle.lumenforge.components.category;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table(name = "vendor")
-public class Vendor {
-
+@Table(name = "device_categories")
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,6 +18,9 @@ public class Vendor {
     @Column(name = "uuid", nullable = false, unique = true, updatable = false, length = 36)
     private String uuid;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "description")
+    private String description;
 }
