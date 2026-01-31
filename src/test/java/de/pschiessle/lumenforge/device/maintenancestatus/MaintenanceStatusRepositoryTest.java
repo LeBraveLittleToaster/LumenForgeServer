@@ -1,5 +1,7 @@
 package de.pschiessle.lumenforge.device.maintenancestatus;
 
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatus;
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

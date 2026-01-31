@@ -1,11 +1,13 @@
 package de.pschiessle.lumenforge.device;
 
 import de.pschiessle.lumenforge.LumenForgeApplication;
-import de.pschiessle.lumenforge.device.category.CategoryRepository;
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatus;
-import de.pschiessle.lumenforge.device.maintenancestatus.MaintenanceStatusRepository;
-import de.pschiessle.lumenforge.device.vendor.Vendor;
-import de.pschiessle.lumenforge.device.vendor.VendorRepository;
+import de.pschiessle.lumenforge.components.category.CategoryRepository;
+import de.pschiessle.lumenforge.components.device.Device;
+import de.pschiessle.lumenforge.components.device.DeviceRepository;
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatus;
+import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatusRepository;
+import de.pschiessle.lumenforge.components.vendor.Vendor;
+import de.pschiessle.lumenforge.components.vendor.VendorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

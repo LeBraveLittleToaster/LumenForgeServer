@@ -1,5 +1,7 @@
 package de.pschiessle.lumenforge.device.vendor;
 
+import de.pschiessle.lumenforge.components.vendor.Vendor;
+import de.pschiessle.lumenforge.components.vendor.VendorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
