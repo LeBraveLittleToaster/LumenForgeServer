@@ -2,6 +2,7 @@ package de.pschiessle.lumenforge.components.stock;
 
 import de.pschiessle.lumenforge.components.device.Device;
 import de.pschiessle.lumenforge.components.device.DeviceRepository;
+import de.pschiessle.lumenforge.components.stock.request.StockCreateDTO;
 import de.pschiessle.lumenforge.components.stock.request.StockRequestDTO;
 import de.pschiessle.lumenforge.components.stock.response.StockResponseDTO;
 import jakarta.persistence.EntityNotFoundException;

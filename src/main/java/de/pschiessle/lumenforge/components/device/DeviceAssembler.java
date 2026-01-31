@@ -1,6 +1,7 @@
 package de.pschiessle.lumenforge.components.device;
 
 import de.pschiessle.lumenforge.components.category.CategoryRepository;
+import de.pschiessle.lumenforge.components.general.Tuple;
 import de.pschiessle.lumenforge.components.maintenancestatus.MaintenanceStatusRepository;
 import de.pschiessle.lumenforge.components.stock.Stock;
 import de.pschiessle.lumenforge.components.stock.StockRepository;
@@ -19,11 +20,14 @@ public class DeviceAssembler {
     private final CategoryRepository categoryRepository;
     private final MaintenanceStatusRepository maintenanceStatusRepository;
     private final StockRepository stockRepository;
+    private final DeviceRepository deviceRepository;
 
-    public void applyCreate(Device device, Stock stock, DeviceRequestDTO request) {
+    public Device assembleAndSave(DeviceRequestDTO request) {
         require(request.vendorId(), "Device.vendorId must not be null");
         require(request.maintenanceStatusId(), "Device.maintenanceStatusId must not be null");
         require(request.stockRequestDTO(), "Device.createStockDTO is not present");
+
+        var device = new Device();
 
         device.setSerialNumber(request.serialNumber());
         device.setName(request.name());
@@ -36,10 +40,17 @@ public class DeviceAssembler {
         device.setMaintenanceStatus(maintenanceStatusRepository.getReferenceById(request.maintenanceStatusId()));
         device.setCategories(request.categoryIds() == null ? List.of() : categoryRepository.findAllById(request.categoryIds()));
 
+        var deviceDB = deviceRepository.save(device);
+
+        var stock = new Stock();
+
         stock.setDevice(device);
         stock.setFractional(request.stockRequestDTO().isFractional());
         stock.setStockUnitType(request.stockRequestDTO().stockUnitType());
         stock.setStockCount(request.stockRequestDTO().stockCount());
+
         stockRepository.save(stock);
+
+        return deviceDB;
     }
 }

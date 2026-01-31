@@ -55,10 +55,7 @@ public class DeviceServiceImpl implements IDeviceService {
 
     @Override
     public Device create(DeviceRequestDTO request) {
-        Device device = new Device();
-        Stock stock = new Stock();
-        deviceAssembler.applyCreate(device, stock, request);
-        return deviceRepository.save(device);
+        return deviceAssembler.assembleAndSave(request);
     }
 
     @Override
