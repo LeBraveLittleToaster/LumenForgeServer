@@ -1,0 +1,61 @@
+device_name,serialNumber,description,purchasePrice
+grandMA3,MA3-00192837,Flagship lighting control console,68000
+grandMA2,MA2-00477122,Industry-standard lighting console,52000
+Wolfmix,WMX-2023-11892,Standalone DMX lighting controller,399
+ChamSysMagicQ,CHMQ-881233,PC-based lighting control software,0
+AvolitesTitan,AVT-552910,Lighting control software platform,0
+AvolitesQuartz,AVQ-339201,Compact lighting console,6200
+AvolitesTigerTouch,AVTT-774190,Touchscreen lighting console,14500
+Hog4,HOG4-998231,High-end lighting console system,41000
+RoadHog4,RH4-553992,Touring-grade lighting console,29500
+FullBoar4,FB4-114782,Mid-size Hog lighting console,21500
+Dot2,MA-DOT2-447190,Entry-level MA lighting console,8500
+OnyxNX1,NX1-202199,Compact lighting controller,2500
+OnyxNX2,NX2-773820,Expandable lighting console,5800
+OnyxNX4,NX4-662811,Professional lighting console,15500
+ETCEos,ETC-EOS-902113,Theatrical lighting control system,12000
+ETCIon,ETC-ION-778321,Mid-range theatrical console,7800
+ETCGio,ETC-GIO-552911,Advanced theatre lighting console,24000
+ETCApex,ETC-APX-001233,Next-gen ETC lighting platform,45000
+LightSharkLS1,LS1-398221,Tablet-controlled lighting console,1900
+LightSharkLSCore,LSC-992881,Core lighting control unit,3200
+VistaL5,VST-L5-771201,High-end lighting console,27000
+VistaL3,VST-L3-119283,Mid-range lighting console,14500
+VistaS1,VST-S1-883772,Entry-level lighting console,4200
+ObsidianNX1,OBS-NX1-311822,Compact lighting controller,2600
+ObsidianNX2,OBS-NX2-774119,Expandable lighting console,5900
+ObsidianNX4,OBS-NX4-552188,Advanced lighting console,16000
+DMXKingUltraDMX,DK-UDMX-882011,USB to DMX interface,160
+EnttecOpenDMX,ENT-ODM-552190,Open-source DMX USB interface,65
+EnttecDMXUSBPro,ENT-PRO-771920,Professional DMX USB interface,190
+EnttecODEMk3,ENT-ODE3-339911,Ethernet to DMX node,450
+SunliteSuite2,SL2-001772,PC lighting control software,0
+SunliteFC,SL-FC-928112,Standalone lighting controller,1400
+DaslightDVC4,DL-DVC4-882211,DMX USB lighting interface,120
+DaslightDVCGold,DL-GOLD-551920,Advanced DMX control interface,320
+QLCPlusNode,QLC-NODE-118882,Open-source DMX node,0
+FreestylerDMX,FSDMX-771029,Free PC lighting software,0
+ShowXpress,SXP-991822,DMX lighting control software,0
+LSCClarity,LSC-CLR-552118,Lighting console platform,18000
+LSCMantra,LSC-MAN-882199,Compact lighting console,3900
+LSCMaxxyz,LSC-MXZ-228811,Legacy lighting console,12500
+PharosLPC,PH-LPC-771011,Architectural lighting controller,2900
+PharosTPC,PH-TPC-883920,Touchscreen lighting controller,5200
+CuePilot,CPL-551922,Timeline-based lighting controller,4800
+ChamsysQuickQ10,QQ10-001928,Entry-level lighting console,2200
+ChamsysQuickQ20,QQ20-771122,Mid-range lighting console,4200
+ChamsysQuickQ30,QQ30-882911,Advanced QuickQ console,6900
+ChamsysMQ50,MQ50-332991,Professional MagicQ console,11000
+ChamsysMQ70,MQ70-119882,Advanced MagicQ console,16500
+ChamsysMQ80,MQ80-551820,High-end MagicQ console,24000
+ChamsysMQ250,MQ250-772190,Flagship MagicQ console,52000
+AvolitesArena,AVA-881120,Large-format lighting console,46000
+AvolitesDiamond,AVD-552199,High-end touring console,39000
+ETCNomad,ETC-NMD-882910,PC-based lighting control system,250
+LuminexLumiNode,LX-LN-771822,Network DMX node,1100
+PathportVia10,PP-V10-552118,sACN/Art-Net DMX gateway,1800
+SwissonXND,SW-XND-992811,Professional DMX node,1400
+NetronEN12,NET-EN12-771920,12-universe Ethernet DMX node,2600
+ArtNetNode8,AN8-551209,Art-Net to DMX converter,900
+DMXSplitter8,DMXS-8-882199,Opto-isolated DMX splitter,220
+DMXMerger4,DMXM-4-771882,DMX signal merger,180
