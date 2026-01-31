@@ -7,5 +7,7 @@ import java.util.UUID;
 
 public record DeviceListWithStockDTO(
         UUID uuid, String name, String serialNumber,
-        BigDecimal stockCount, StockUnitType stockUnitType
+        BigDecimal stockCount,
+        StockUnitType stockUnitType,
+        String vendorName
 ) {}
