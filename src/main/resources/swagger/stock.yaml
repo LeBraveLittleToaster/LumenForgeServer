@@ -1,0 +1,178 @@
+openapi: 3.0.3
+info:
+  title: Stock API
+  version: 1.0.0
+paths:
+  /api/stocks/device/{deviceUuid}:
+    get:
+      summary: Get stock by device UUID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockGetByDeviceRequestDTO'
+      parameters:
+        - name: deviceUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Stock found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockGetByDeviceResponseDTO'
+    put:
+      summary: Upsert stock by device UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockUpsertByDeviceRequestDTO'
+      parameters:
+        - name: deviceUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Stock updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockUpsertByDeviceResponseDTO'
+    delete:
+      summary: Delete stock by device UUID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockDeleteByDeviceRequestDTO'
+      parameters:
+        - name: deviceUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Stock deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockDeleteByDeviceResponseDTO'
+  /api/stocks/device/{deviceUuid}/count:
+    patch:
+      summary: Patch stock count by device UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockPatchCountRequestDTO'
+      parameters:
+        - name: deviceUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Stock count updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockPatchCountResponseDTO'
+components:
+  schemas:
+    StockGetByDeviceRequestDTO:
+      type: object
+      properties:
+        deviceUuid:
+          type: string
+          format: uuid
+    StockGetByDeviceResponseDTO:
+      type: object
+      properties:
+        stock:
+          $ref: '#/components/schemas/StockResponseDTO'
+    StockUpsertByDeviceRequestDTO:
+      type: object
+      properties:
+        deviceUuid:
+          type: string
+          format: uuid
+        stock:
+          $ref: '#/components/schemas/StockRequestDTO'
+    StockUpsertByDeviceResponseDTO:
+      type: object
+      properties:
+        stock:
+          $ref: '#/components/schemas/StockResponseDTO'
+    StockPatchCountRequestDTO:
+      type: object
+      properties:
+        deviceUuid:
+          type: string
+          format: uuid
+        stockCount:
+          type: number
+          format: double
+    StockPatchCountResponseDTO:
+      type: object
+      properties:
+        stock:
+          $ref: '#/components/schemas/StockResponseDTO'
+    StockDeleteByDeviceRequestDTO:
+      type: object
+      properties:
+        deviceUuid:
+          type: string
+          format: uuid
+    StockDeleteByDeviceResponseDTO:
+      type: object
+      properties:
+        message:
+          type: string
+    StockRequestDTO:
+      type: object
+      properties:
+        stockUnitType:
+          $ref: '#/components/schemas/StockUnitType'
+        stockCount:
+          type: number
+          format: double
+        isFractional:
+          type: boolean
+    StockResponseDTO:
+      type: object
+      properties:
+        deviceUuid:
+          type: string
+          format: uuid
+        stockUuid:
+          type: string
+          format: uuid
+        stockUnitType:
+          $ref: '#/components/schemas/StockUnitType'
+        stockCount:
+          type: number
+          format: double
+        isFractional:
+          type: boolean
+    StockUnitType:
+      type: string
+      enum:
+        - GRAM
+        - MILLILITER
+        - PIECES
