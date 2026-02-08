@@ -1,7 +1,0 @@
-name,description
-OPERATIONAL,Fully functional and ready for use
-NEEDS_INSPECTION,Due for inspection or condition unknown
-IN_REPAIR,Currently being repaired or serviced
-WAITING_FOR_PARTS,Repair started but blocked waiting for parts
-OUT_OF_SERVICE,Not usable until maintenance is completed
-RETIRED,Permanently removed from service
