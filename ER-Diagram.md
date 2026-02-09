@@ -1,4 +1,4 @@
-erDiagram
+```mermaid
     VENDOR ||--o{ DEVICE : supplies
     MAINTENANCE_STATUS ||--o{ DEVICE : assigns
 
@@ -141,3 +141,4 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
+```
