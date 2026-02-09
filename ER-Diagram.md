@@ -1,4 +1,4 @@
-```mermaid
+```erDiagram
     VENDOR ||--o{ DEVICE : supplies
     MAINTENANCE_STATUS ||--o{ DEVICE : assigns
 
