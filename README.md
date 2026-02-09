@@ -1,6 +1,8 @@
 # LumenForgeServer
 
 [![Tests](https://github.com/LeBraveLittleToaster/LumenForgeServer/actions/workflows/tests.yml/badge.svg)](https://github.com/LeBraveLittleToaster/LumenForgeServer/actions/workflows/tests.yml)
+[![ER Diagram](https://img.shields.io/badge/ER-Diagram-blue?style=for-the-badge)](https://github.com/LeBraveLittleToaster/LumenForgeServer/blob/convert-to-dotnet-core/ER-Diagram.md)
+
 
 LumenForgeServer powers LumenForge, an inventory and rental platform built for small and
 medium-sized organizations in the event industry. It helps teams keep track of their
