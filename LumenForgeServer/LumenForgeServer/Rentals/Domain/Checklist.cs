@@ -1,4 +1,5 @@
 using LumenForgeServer.Common;
+using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
@@ -17,15 +18,15 @@ public class Checklist
     public Checklist? SourceChecklist { get; set; }
     public List<Checklist> DerivedChecklists { get; set; } = new();
 
-    public DateTime GeneratedAt { get; set; }
+    public Instant GeneratedAt { get; set; }
     public string? GeneratedByUserId { get; set; } // Keycloak user id
 
-    public DateTime? SignedAt { get; set; }
+    public Instant? SignedAt { get; set; }
     public string? SignedByUserId { get; set; } // Keycloak user id
 
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public List<ChecklistItem> Items { get; set; } = new();
 }

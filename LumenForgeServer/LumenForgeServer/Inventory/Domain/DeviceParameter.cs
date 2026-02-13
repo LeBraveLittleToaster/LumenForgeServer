@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace LumenForgeServer.Inventory.Domain;
 
 public class DeviceParameter
@@ -9,6 +11,6 @@ public class DeviceParameter
     public long DeviceId { get; set; }
     public Device Device { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 }

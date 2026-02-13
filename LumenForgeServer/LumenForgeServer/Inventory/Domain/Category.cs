@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace LumenForgeServer.Inventory.Domain;
 
 public class Category
@@ -6,8 +8,8 @@ public class Category
     public Guid Guid { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public List<DeviceCategory> DeviceCategories { get; set; } = new();
 }

@@ -1,4 +1,5 @@
 using LumenForgeServer.Billing.Domain;
+using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
@@ -15,28 +16,28 @@ public class Rental
 
     public string? RequestTitle { get; set; }
     public string? RequestDescription { get; set; }
-    public DateTime? RequestedAt { get; set; }
+    public Instant? RequestedAt { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime? PickupAt { get; set; }
-    public DateTime? DropoffAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
-    public DateTime? InvoicedAt { get; set; }
-    public DateTime? PaidAt { get; set; }
-    public DateTime? ReportedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant? PickupAt { get; set; }
+    public Instant? DropoffAt { get; set; }
+    public Instant? CompletedAt { get; set; }
+    public Instant? InvoicedAt { get; set; }
+    public Instant? PaidAt { get; set; }
+    public Instant? ReportedAt { get; set; }
 
     public string? AssignedByUserId { get; set; }
-    public DateTime? AssignedAt { get; set; }
+    public Instant? AssignedAt { get; set; }
 
     public string? PickupProcessedByUserId { get; set; }
     public string? DropoffProcessedByUserId { get; set; }
     public string? CompletedByUserId { get; set; }
 
     public bool IsScrapped { get; set; }
-    public DateTime? ScrappedAt { get; set; }
+    public Instant? ScrappedAt { get; set; }
     public string? ScrappedByUserId { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public List<RentalItem> Items { get; set; } = new();
     public List<Checklist> Checklists { get; set; } = new();

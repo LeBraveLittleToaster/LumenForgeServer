@@ -1,5 +1,6 @@
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Rentals.Domain;
+using NodaTime;
 
 namespace LumenForgeServer.Maintenance.Domain;
 
@@ -24,9 +25,9 @@ public class MaintenanceBacklog
     public string IssueSummary { get; set; } = null!;
     public string? IssueDescription { get; set; }
 
-    public DateTime ReportedAt { get; set; }
-    public DateTime? ResolvedAt { get; set; }
+    public Instant ReportedAt { get; set; }
+    public Instant? ResolvedAt { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 }

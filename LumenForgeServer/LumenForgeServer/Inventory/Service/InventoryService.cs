@@ -1,3 +1,4 @@
+using System.Reflection.Metadata;
 using LumenForgeServer.Common.Exceptions;
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Inventory.Dto.Create;
@@ -48,8 +49,16 @@ public class InventoryService(IInventoryRepository repository)
     public async Task<Category> AddCategory(CreateCategoryDTO dto, CancellationToken ct)
     {
         var category = CategoryFactory.Create(dto);
-        await repository.AddCategory(category, ct);
-        await repository.SaveChangesAsync(ct);
+        try
+        {
+            await repository.AddCategory(category, ct);
+            await repository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new ConflictException("A unique constraint was violated.", ex);
+        }
+        
         return category;
     }
 }

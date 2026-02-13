@@ -1,5 +1,6 @@
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Maintenance.Domain;
+using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
@@ -17,15 +18,15 @@ public class RentalItem
     public decimal Quantity { get; set; } // > 0
 
     public bool IsApproved { get; set; }
-    public DateTime? ApprovedAt { get; set; }
+    public Instant? ApprovedAt { get; set; }
 
     // nullable (customer or provider) - Keycloak user id
     public string? ApprovedByUserId { get; set; }
 
     public string? ConditionNotes { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public List<ChecklistItem> ChecklistItems { get; set; } = new();
     public List<MaintenanceBacklog> MaintenanceBacklogs { get; set; } = new();

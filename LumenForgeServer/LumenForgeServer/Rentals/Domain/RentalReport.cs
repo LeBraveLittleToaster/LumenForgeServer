@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace LumenForgeServer.Rentals.Domain;
 
 public class RentalReport
@@ -8,12 +10,12 @@ public class RentalReport
     public long RentalId { get; set; }
     public Rental Rental { get; set; } = null!;
 
-    public DateTime GeneratedAt { get; set; }
+    public Instant GeneratedAt { get; set; }
     public string? GeneratedByUserId { get; set; } // Keycloak user id
 
     public string? ReportSummary { get; set; }
     public string? ReportDocumentUrl { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 }

@@ -8,6 +8,7 @@ DiRegistration.RegisterRepositories(builder);
 DiRegistration.RegisterServices(builder);
 DiRegistration.RegisterControllers(builder);
 
+DiRegistration.RegisterExceptionHandler(builder);
 
 // Add services to the container.
 
@@ -26,6 +27,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseExceptionHandler();
 
 app.UseAuthorization();
 

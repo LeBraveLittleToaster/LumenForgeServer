@@ -9,7 +9,4 @@ public class DeviceCategory
 
     public long CategoryId { get; set; }
     public Category Category { get; set; } = null!;
-
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
 }

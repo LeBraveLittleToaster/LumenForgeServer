@@ -64,6 +64,7 @@ public class AppDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique();
             e.Property(x => x.Description).HasMaxLength(2000);
             e.HasIndex(x => x.Guid).IsUnique();
         });

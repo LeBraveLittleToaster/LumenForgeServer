@@ -1,4 +1,5 @@
 using LumenForgeServer.Common;
+using NodaTime;
 
 namespace LumenForgeServer.Billing.Domain;
 
@@ -19,7 +20,7 @@ public class Payment
     public PaymentMethod PaymentMethod { get; set; }
     public string? ProviderReference { get; set; }
 
-    public DateTime? PaidAt { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant? PaidAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 }

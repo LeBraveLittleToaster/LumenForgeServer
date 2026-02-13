@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace LumenForgeServer.Inventory.Domain;
 
 public class Device
@@ -18,8 +20,8 @@ public class Device
     public long MaintenanceStatusId { get; set; }
     public MaintenanceStatus MaintenanceStatus { get; set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public Stock Stock { get; set; } = null!;
     public List<DeviceParameter> Parameters { get; set; } = new();

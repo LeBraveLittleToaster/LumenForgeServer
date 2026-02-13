@@ -1,6 +1,7 @@
 using LumenForgeServer.Common;
 using LumenForgeServer.Maintenance.Domain;
 using LumenForgeServer.Rentals.Domain;
+using NodaTime;
 
 namespace LumenForgeServer.Inventory.Domain;
 
@@ -15,8 +16,8 @@ public class Stock
     public StockUnitType UnitStockType { get; set; }
     public decimal StockCount { get; set; } // >= 0
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public List<RentalItem> RentalItems { get; set; } = new();
     public List<MaintenanceBacklog> MaintenanceBacklogs { get; set; } = new();

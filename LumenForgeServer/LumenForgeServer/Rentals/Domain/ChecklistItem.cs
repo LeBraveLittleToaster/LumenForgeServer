@@ -1,4 +1,5 @@
 using LumenForgeServer.Maintenance.Domain;
+using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
@@ -21,8 +22,8 @@ public class ChecklistItem
     public string? DamageSummary { get; set; }
     public string? DamageDescription { get; set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public Instant CreatedAt { get; set; }
+    public Instant UpdatedAt { get; set; }
 
     public List<MaintenanceBacklog> MaintenanceBacklogs { get; set; } = new();
 }
