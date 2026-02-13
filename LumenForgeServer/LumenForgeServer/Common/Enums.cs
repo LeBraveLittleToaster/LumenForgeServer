@@ -1,4 +1,4 @@
-namespace RentalDomain.Common;
+namespace LumenForgeServer.Common;
 
 public enum StockUnitType
 {

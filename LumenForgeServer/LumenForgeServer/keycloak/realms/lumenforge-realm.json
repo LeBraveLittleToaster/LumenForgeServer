@@ -1,0 +1,93 @@
+{
+  "realm": "lumenforge-realm",
+  "enabled": true,
+
+  "displayName": "Lumenforge Backend",
+  "loginTheme": "",
+  "accountTheme": "",
+  "adminTheme": "",
+  "emailTheme": "",
+
+  "registrationAllowed": false,
+  "rememberMe": true,
+  "resetPasswordAllowed": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+
+  "roles": {
+    "realm": [
+      { "name": "REALM_USER",  "description": "Regular user" },
+      { "name": "REALM_ADMIN", "description": "Administrator" },
+      { "name": "REALM_OWNER", "description": "Instance owner / superuser" }
+    ]
+  },
+
+  "groups": [
+    { "name": "users", "realmRoles": ["REALM_USER"] },
+    { "name": "admins", "realmRoles": ["REALM_ADMIN"] },
+    { "name": "owners", "realmRoles": ["REALM_OWNER", "REALM_ADMIN"] }
+  ],
+
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "User",
+      "email": "alice@example.com",
+      "groups": ["users"],
+      "credentials": [
+        { "type": "password", "value": "alice123", "temporary": false }
+      ]
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Admin",
+      "email": "bob@example.com",
+      "groups": ["admins"],
+      "credentials": [
+        { "type": "password", "value": "bob123", "temporary": false }
+      ]
+    },
+    {
+      "username": "olivia",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Olivia",
+      "lastName": "Owner",
+      "email": "olivia@example.com",
+      "groups": ["owners"],
+      "credentials": [
+        { "type": "password", "value": "olivia123", "temporary": false }
+      ]
+    }
+  ],
+
+  "clients": [
+    {
+      "clientId": "lumenforge",
+      "name": "lumenforge",
+      "enabled": true,
+
+      "protocol": "openid-connect",
+      "publicClient": true,
+
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["+"],
+
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ]
+}
