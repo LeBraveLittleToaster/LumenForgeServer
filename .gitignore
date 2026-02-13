@@ -1,0 +1,15 @@
+# Build output
+bin/
+obj/
+
+# Rider / VS / VSCode
+.idea/
+.vs/
+.vscode/
+
+# User-specific files
+*.user
+*.suo
+
+# macOS
+.DS_Store
