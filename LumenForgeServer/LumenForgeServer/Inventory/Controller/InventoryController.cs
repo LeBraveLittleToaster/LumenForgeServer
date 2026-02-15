@@ -1,13 +1,16 @@
+using LumenForgeServer.Common.Auth;
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.View;
 using LumenForgeServer.Inventory.Factory;
 using LumenForgeServer.Inventory.Service;
 using LumenForgeServer.Inventory.Validator;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumenForgeServer.Inventory.Controller
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class InventoryController : ControllerBase
@@ -21,6 +24,7 @@ namespace LumenForgeServer.Inventory.Controller
         private readonly ILogger<InventoryController> _logger;
         private readonly InventoryService _inventoryService;
 
+        [Authorize(Policy =AuthConstants.POLICY_ADMIN_ONLY)]
         [HttpGet("{deviceGuid}")]
         public async Task<ActionResult> GetCategories(string deviceGuid, CancellationToken ct)
         {
@@ -41,6 +45,7 @@ namespace LumenForgeServer.Inventory.Controller
             return new JsonResult(CategoryFactory.FromCategory(cat));
         }
 
+        [Produces("application/json")]
         [HttpPost("CreateCategory")]
         public async Task<ActionResult<CategoryViewDto>> CreateCategory(CreateCategoryDTO dto, CancellationToken ct)
         {
@@ -51,7 +56,7 @@ namespace LumenForgeServer.Inventory.Controller
 
             _logger.LogInformation($"Creating category {dto.Name}");
             var category = await _inventoryService.AddCategory(dto, ct);
-            return Ok(CategoryFactory.FromCategory(category));
+            return new JsonResult(CategoryFactory.FromCategory(category));
         }
     }
 }

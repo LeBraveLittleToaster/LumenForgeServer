@@ -1,35 +1,52 @@
 using LumenForgeServer.Common;
 using LumenForgeServer.Common.Persistance;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
+
+var keycloakAuthority = builder.Configuration["Keycloak:Authority"]!;
+var keycloakClientId = builder.Configuration["Keycloak:ClientId"]!;
+
+DiRegistration.AddAuthenticationJWT(builder);
 
 DiRegistration.RegisterDbContext(builder);
 DiRegistration.RegisterRepositories(builder);
 DiRegistration.RegisterServices(builder);
-DiRegistration.RegisterControllers(builder);
+DiRegistration.RegisterSwagger(builder, keycloakAuthority, keycloakClientId);
 
 DiRegistration.RegisterExceptionHandler(builder);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    using(var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();   
+    }
     app.MapOpenApi();
     await DevDbSeeder.ResetAndSeedAsync(app.Services);
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.OAuthClientId(keycloakClientId);
+        options.OAuthUsePkce();
+    });
 }
 
 app.UseHttpsRedirection();
 
 app.UseExceptionHandler();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
