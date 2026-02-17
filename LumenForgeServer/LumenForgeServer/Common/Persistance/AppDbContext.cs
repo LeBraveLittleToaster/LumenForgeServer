@@ -1,4 +1,5 @@
 using LumenForgeServer.Billing.Domain;
+using LumenForgeServer.Common.Auth.Domain;
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Maintenance.Domain;
 using LumenForgeServer.Rentals.Domain;
@@ -10,6 +11,12 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
 
+    // Authentication and Authorization
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Group> Groups => Set<Group>();
+    public DbSet<GroupRole> GroupRoles => Set<GroupRole>();
+    public DbSet<GroupUser> GroupUsers => Set<GroupUser>();
+    
     // Inventory
     public DbSet<Vendor> Vendors => Set<Vendor>();
     public DbSet<Category> Categories => Set<Category>();
@@ -40,7 +47,54 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder b)
     {
         base.OnModelCreating(b);
+        
+        // --------------------
+        // Authentication and Authorization
+        // --------------------
+        b.Entity<User>().ToTable("users");
+        b.Entity<Group>().ToTable("groups");
+        b.Entity<GroupRole>().ToTable("group_roles");
+        b.Entity<GroupUser>().ToTable("group_users");
 
+        b.Entity<User>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.KeycloakUserId).IsUnique();
+            e.HasIndex(x => x.GroupUsers);
+            e.HasMany(x => x.GroupUsers)
+                .WithOne(x => x.User)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        b.Entity<Group>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Guid).IsUnique();
+            
+            e.HasMany(x => x.GroupRoles)
+                .WithOne(x => x.Group)
+                .HasForeignKey(x => x.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.GroupUsers)
+                .WithOne(x => x.Group)
+                .HasForeignKey(x => x.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<GroupRole>(e =>
+        {
+            e.HasKey(x => new { x.GroupId, x.RoleId });
+            e.Property(x => x.RoleId).HasConversion<int>();
+            
+        });
+        
+        b.Entity<GroupUser>(e =>
+        {
+            e.HasKey(x => new { x.GroupId, x.UserId });
+            e.HasIndex(x => x.UserId);
+        });
+        
         // --------------------
         // Inventory tables
         // --------------------
