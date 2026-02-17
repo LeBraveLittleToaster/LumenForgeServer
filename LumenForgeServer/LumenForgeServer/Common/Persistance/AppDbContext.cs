@@ -60,7 +60,7 @@ public class AppDbContext : DbContext
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.KeycloakUserId).IsUnique();
-            e.HasIndex(x => x.GroupUsers);
+            
             e.HasMany(x => x.GroupUsers)
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)

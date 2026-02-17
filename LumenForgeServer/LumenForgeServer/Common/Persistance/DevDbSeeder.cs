@@ -7,7 +7,7 @@ namespace LumenForgeServer.Common.Persistance;
 
 public static class DevDbSeeder
 {
-    public static async Task ResetAndSeedAsync(IServiceProvider serviceProvider)
+    public static async Task DeleteAndSeedDBAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
 
@@ -28,8 +28,8 @@ public static class DevDbSeeder
             logger.LogInformation("Deleting database...");
             await db.Database.EnsureDeletedAsync();
 
-            logger.LogInformation("Applying migrations...");
-            await db.Database.MigrateAsync();
+            logger.LogInformation("Creating database without migrations...");
+            await db.Database.EnsureCreatedAsync();
 
             logger.LogInformation("Seeding dummy data...");
 
