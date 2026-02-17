@@ -1,0 +1,76 @@
+namespace LumenForgeServer.Common.Auth.Domain;
+
+public enum Role
+{
+    None = 0,
+
+    // =========================
+    // Inventory
+    // =========================
+
+    // Device (10–19)
+    DeviceCreate = 10,
+    DeviceRead = 11,
+    DeviceUpdate = 12,
+    DeviceDelete = 13,
+
+    // Vendor (20–29)
+    VendorCreate = 20,
+    VendorRead = 21,
+    VendorUpdate = 22,
+    VendorDelete = 23,
+
+    // Category (30–39)
+    CategoryCreate = 30,
+    CategoryRead = 31,
+    CategoryUpdate = 32,
+    CategoryDelete = 33,
+
+    // Stock (40–49)
+    StockCreate = 40,
+    StockRead = 41,
+    StockUpdate = 42,
+    StockDelete = 43,
+
+    // =========================
+    // Maintenance
+    // =========================
+
+    // Backlog (50–59)
+    BacklogCreate = 50,
+    BacklogRead = 51,
+    BacklogUpdate = 52,
+    BacklogDelete = 53,
+
+    // =========================
+    // Rentals
+    // =========================
+
+    // Rental (60–69)
+    RentalCreate = 60,
+    RentalRead = 61,
+    RentalUpdate = 62,
+    RentalDelete = 63,
+
+    // Rental Status (70–79)
+    RentalStatusCreate = 70,
+    RentalStatusRead = 71,
+    RentalStatusUpdate = 72,
+    RentalStatusDelete = 73,
+
+    // =========================
+    // Billing
+    // =========================
+
+    // Invoice (80–89)
+    InvoiceCreate = 80,
+    InvoiceRead = 81,
+    InvoiceUpdate = 82,
+    InvoiceDelete = 83,
+
+    // Invoice Status (90–99)
+    InvoiceStatusCreate = 90,
+    InvoiceStatusRead = 91,
+    InvoiceStatusUpdate = 92,
+    InvoiceStatusDelete = 93
+}

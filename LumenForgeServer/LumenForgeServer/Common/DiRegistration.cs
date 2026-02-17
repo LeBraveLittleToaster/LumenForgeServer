@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using System.Text.Json;
 using LumenForgeServer.Common.Auth;
 using LumenForgeServer.Common.Exceptions;
 using LumenForgeServer.Common.Persistance;
@@ -66,30 +68,31 @@ public static class DiRegistration
                         AuthorizationUrl = new Uri($"{keycloakAuthority}/protocol/openid-connect/auth"),
                         TokenUrl = new Uri($"{keycloakAuthority}/protocol/openid-connect/token"),
                         Scopes = new Dictionary<string, string>
-                {
-                    { "openid", "OpenID Connect scope" },
-                    { "profile", "User profile" }
-                }
+                        {
+                            { "openid", "OpenID Connect scope" },
+                            { "profile", "User profile" }
+                        }
                     }
                 }
             });
 
             options.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecuritySchemeReference(nameof(SecuritySchemeType.OAuth2), doc),
-            []
-        }
-    });
+            {
+                {
+                    new OpenApiSecuritySchemeReference(nameof(SecuritySchemeType.OAuth2), doc),
+                    []
+                }
+            });
         });
     }
 
-    public static void AddAuthenticationJWT(WebApplicationBuilder builder)
+    public static void AddAuthenticationJwt(WebApplicationBuilder builder)
     {
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
             {
                 options.Authority = builder.Configuration["Keycloak:Issuer"]!;
                 options.Audience = builder.Configuration["Keycloak:Audience"];
@@ -101,21 +104,44 @@ public static class DiRegistration
                     NameClaimType = "preferred_username"
                 };
 
-                options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async ctx =>
+                    {
+                        var identity = ctx.Principal?.Identity as ClaimsIdentity;
+                        if (identity is null) return;
 
+                        AddKeycloakRoles(identity);
+                        // Load all groups the user is part of and add it to there roles
+                        //identity.AddClaim(new Claim(ClaimTypes.Role, "Here the role"));
+                    }
+                };
+                options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
             });
         builder.Services.AddAuthorization();
     }
 
-    public static void addAuthorization(WebApplicationBuilder builder)
+    private static void AddKeycloakRoles(ClaimsIdentity identity)
+    {
+        var realmAccess = identity.FindFirst("realm_access")?.Value;
+        if (string.IsNullOrWhiteSpace(realmAccess) || !realmAccess.TrimStart().StartsWith("{")) return;
+        using var doc = JsonDocument.Parse(realmAccess);
+        if (!doc.RootElement.TryGetProperty("roles", out var roles) ||
+            roles.ValueKind != JsonValueKind.Array) return;
+        foreach (var r in roles.EnumerateArray().Select(x => x.GetString())
+                     .Where(x => !string.IsNullOrWhiteSpace(x)))
+        {
+            identity.AddClaim(new Claim(ClaimTypes.Role, r!));
+        }
+    }
+
+    public static void AddAuthorization(WebApplicationBuilder builder)
     {
         builder.Services.AddAuthorization(options =>
         {
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("AdminOnly", p => p.RequireRole("REALM_ADMIN"));
-                options.AddPolicy("OwnerOnly", p => p.RequireRole("REALM_OWNER"));
-            });
+            builder.Services.AddAuthorizationBuilder()
+                .AddPolicy("Administrator", p => p.RequireRole("REALM_ADMIN"))
+                .AddPolicy("OwnerOnly", p => p.RequireRole("REALM_OWNER"));
         });
     }
 }

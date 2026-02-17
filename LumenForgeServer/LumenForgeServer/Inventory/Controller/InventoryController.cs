@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LumenForgeServer.Inventory.Controller
 {
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/v1/")]
     [ApiController]
     public class InventoryController : ControllerBase
     {
@@ -26,7 +26,7 @@ namespace LumenForgeServer.Inventory.Controller
 
         [Authorize(Policy =AuthConstants.POLICY_ADMIN_ONLY)]
         [HttpGet("{deviceGuid}")]
-        public async Task<ActionResult> GetCategories(string deviceGuid, CancellationToken ct)
+        public ActionResult GetCategories(string deviceGuid, CancellationToken ct)
         {
             var cat = new Category
             {

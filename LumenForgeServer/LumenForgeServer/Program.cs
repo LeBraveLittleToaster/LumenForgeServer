@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 var keycloakAuthority = builder.Configuration["Keycloak:Authority"]!;
 var keycloakClientId = builder.Configuration["Keycloak:ClientId"]!;
 
-DiRegistration.AddAuthenticationJWT(builder);
+DiRegistration.AddAuthenticationJwt(builder);
 
 DiRegistration.RegisterDbContext(builder);
 DiRegistration.RegisterRepositories(builder);
