@@ -7,10 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LumenForgeServer.Common.Database;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) {}
-
     // Authentication and Authorization
     public DbSet<User> Users => Set<User>();
     public DbSet<Group> Groups => Set<Group>();
@@ -48,170 +46,21 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(b);
         
-        // --------------------
-        // Authentication and Authorization
-        // --------------------
-        b.Entity<User>().ToTable("users");
-        b.Entity<Group>().ToTable("groups");
-        b.Entity<GroupRole>().ToTable("group_roles");
-        b.Entity<GroupUser>().ToTable("group_users");
+        AddAuthModuleTableDef(b);
+        AddInventoryModuleTableDef(b);
+        AddBillingModuleTableDef(b);
+        AddmaintenanceModuleTableDef(b);
+        AddRentalModuleTableDef(b);
+    }
 
-        b.Entity<User>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.HasIndex(x => x.KeycloakUserId).IsUnique();
-            
-            e.HasMany(x => x.GroupUsers)
-                .WithOne(x => x.User)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-        
-        b.Entity<Group>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.HasIndex(x => x.Guid).IsUnique();
-            
-            e.HasMany(x => x.GroupRoles)
-                .WithOne(x => x.Group)
-                .HasForeignKey(x => x.GroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-            e.HasMany(x => x.GroupUsers)
-                .WithOne(x => x.Group)
-                .HasForeignKey(x => x.GroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
+    private static void AddBillingModuleTableDef(ModelBuilder builder)
+    {
+        builder.Entity<InvoiceStatus>().ToTable("invoice_status");
+        builder.Entity<Invoice>().ToTable("invoice");
+        builder.Entity<PaymentStatus>().ToTable("payment_status");
+        builder.Entity<Payment>().ToTable("payment");
 
-        b.Entity<GroupRole>(e =>
-        {
-            e.HasKey(x => new { x.GroupId, x.RoleId });
-            e.Property(x => x.RoleId).HasConversion<int>();
-            
-        });
-        
-        b.Entity<GroupUser>(e =>
-        {
-            e.HasKey(x => new { x.GroupId, x.UserId });
-            e.HasIndex(x => x.UserId);
-        });
-        
-        // --------------------
-        // Inventory tables
-        // --------------------
-        b.Entity<Vendor>().ToTable("vendor");
-        b.Entity<Category>().ToTable("category");
-        b.Entity<MaintenanceStatus>().ToTable("maintenance_status");
-        b.Entity<Device>().ToTable("device");
-        b.Entity<Stock>().ToTable("stock");
-        b.Entity<DeviceParameter>().ToTable("device_parameter");
-        b.Entity<DeviceCategory>().ToTable("device_category");
-
-        b.Entity<Vendor>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Name).HasMaxLength(256).IsRequired();
-            e.HasIndex(x => x.Guid).IsUnique();
-            e.HasIndex(x => x.Name).IsUnique();
-        });
-
-        b.Entity<Category>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Name).HasMaxLength(256).IsRequired();
-            e.HasIndex(x => x.Name).IsUnique();
-            e.Property(x => x.Description).HasMaxLength(2000);
-            e.HasIndex(x => x.Guid).IsUnique();
-        });
-
-        b.Entity<MaintenanceStatus>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.Name).HasMaxLength(128).IsRequired();
-            e.Property(x => x.Description).HasMaxLength(2000);
-            e.HasIndex(x => x.Uuid).IsUnique();
-            e.HasIndex(x => x.Name).IsUnique();
-        });
-
-        b.Entity<Device>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.SerialNumber).HasMaxLength(256).IsRequired();
-            e.HasIndex(x => x.Uuid).IsUnique();
-            e.HasIndex(x => x.SerialNumber).IsUnique();
-
-            e.Property(x => x.DeviceName).HasMaxLength(512);
-            e.Property(x => x.DeviceDescription).HasMaxLength(4000);
-            e.Property(x => x.PhotoUrl).HasMaxLength(2000);
-
-            e.Property(x => x.PurchasePrice).HasPrecision(18, 2);
-            e.Property(x => x.PurchaseDate);
-
-            e.HasOne(x => x.Vendor)
-                .WithMany(v => v.Devices)
-                .HasForeignKey(x => x.VendorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            e.HasOne(x => x.MaintenanceStatus)
-                .WithMany(ms => ms.Devices)
-                .HasForeignKey(x => x.MaintenanceStatusId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            e.HasOne(x => x.Stock)
-                .WithOne(s => s.Device)
-                .HasForeignKey<Stock>(s => s.DeviceId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        b.Entity<Stock>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.HasIndex(x => x.Uuid).IsUnique();
-            e.HasIndex(x => x.DeviceId).IsUnique(); // one-to-one
-
-            e.Property(x => x.StockCount).HasPrecision(18, 3);
-            e.Property(x => x.UnitStockType).HasConversion<string>().HasMaxLength(32).IsRequired();
-        });
-
-        b.Entity<DeviceParameter>(e =>
-        {
-            e.HasKey(x => x.Id);
-            e.Property(x => x.ParamKey).HasMaxLength(256).IsRequired();
-            e.Property(x => x.Value).HasMaxLength(4000).IsRequired();
-
-            e.HasOne(x => x.Device)
-                .WithMany(d => d.Parameters)
-                .HasForeignKey(x => x.DeviceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            e.HasIndex(x => new { x.DeviceId, x.ParamKey }).IsUnique();
-        });
-
-        b.Entity<DeviceCategory>(e =>
-        {
-            e.HasKey(x => x.Id);
-
-            e.HasOne(x => x.Device)
-                .WithMany(d => d.DeviceCategories)
-                .HasForeignKey(x => x.DeviceId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            e.HasOne(x => x.Category)
-                .WithMany(c => c.DeviceCategories)
-                .HasForeignKey(x => x.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            e.HasIndex(x => new { x.DeviceId, x.CategoryId }).IsUnique();
-        });
-
-        // --------------------
-        // Billing tables
-        // --------------------
-        b.Entity<InvoiceStatus>().ToTable("invoice_status");
-        b.Entity<Invoice>().ToTable("invoice");
-        b.Entity<PaymentStatus>().ToTable("payment_status");
-        b.Entity<Payment>().ToTable("payment");
-
-        b.Entity<InvoiceStatus>(e =>
+        builder.Entity<InvoiceStatus>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -220,7 +69,7 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.Name).IsUnique();
         });
 
-        b.Entity<Invoice>(e =>
+        builder.Entity<Invoice>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -248,7 +97,7 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        b.Entity<PaymentStatus>(e =>
+        builder.Entity<PaymentStatus>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -257,7 +106,7 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.Name).IsUnique();
         });
 
-        b.Entity<Payment>(e =>
+        builder.Entity<Payment>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -277,11 +126,10 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.PaymentStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+    }
 
-        // --------------------
-        // Maintenance tables
-        // --------------------
-        // (Your original MaintenanceDbContext didn’t set ToTable; add them if you want stable names.)
+    private static void AddmaintenanceModuleTableDef(ModelBuilder b)
+    {
         b.Entity<MaintenanceBacklogStatus>().ToTable("maintenance_backlog_status");
         b.Entity<MaintenanceBacklog>().ToTable("maintenance_backlog");
 
@@ -323,18 +171,18 @@ public class AppDbContext : DbContext
                 .HasForeignKey(x => x.MaintenanceBacklogStatusId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+    }
 
-        // --------------------
-        // Rentals tables
-        // --------------------
-        b.Entity<RentalStatus>().ToTable("rental_status");
-        b.Entity<Rental>().ToTable("rental");
-        b.Entity<RentalItem>().ToTable("rental_item");
-        b.Entity<Checklist>().ToTable("checklist");
-        b.Entity<ChecklistItem>().ToTable("checklist_item");
-        b.Entity<RentalReport>().ToTable("rental_report");
+    private static void AddRentalModuleTableDef(ModelBuilder builder)
+    {
+        builder.Entity<RentalStatus>().ToTable("rental_status");
+        builder.Entity<Rental>().ToTable("rental");
+        builder.Entity<RentalItem>().ToTable("rental_item");
+        builder.Entity<Checklist>().ToTable("checklist");
+        builder.Entity<ChecklistItem>().ToTable("checklist_item");
+        builder.Entity<RentalReport>().ToTable("rental_report");
 
-        b.Entity<RentalStatus>(e =>
+        builder.Entity<RentalStatus>(e =>
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(128).IsRequired();
@@ -343,7 +191,7 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.Name).IsUnique();
         });
 
-        b.Entity<Rental>(e =>
+        builder.Entity<Rental>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -371,7 +219,7 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        b.Entity<RentalItem>(e =>
+        builder.Entity<RentalItem>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -391,7 +239,7 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        b.Entity<Checklist>(e =>
+        builder.Entity<Checklist>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -415,7 +263,7 @@ public class AppDbContext : DbContext
             e.HasIndex(x => new { x.RentalId, x.ChecklistType }).IsUnique(false);
         });
 
-        b.Entity<ChecklistItem>(e =>
+        builder.Entity<ChecklistItem>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -440,7 +288,7 @@ public class AppDbContext : DbContext
             e.HasIndex(x => new { x.ChecklistId, x.RentalItemId }).IsUnique();
         });
 
-        b.Entity<RentalReport>(e =>
+        builder.Entity<RentalReport>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Uuid).IsUnique();
@@ -450,6 +298,161 @@ public class AppDbContext : DbContext
 
             e.Property(x => x.ReportSummary).HasMaxLength(4000);
             e.Property(x => x.ReportDocumentUrl).HasMaxLength(2000);
+        });
+    }
+
+    private static void AddInventoryModuleTableDef(ModelBuilder builder)
+    {
+        builder.Entity<Vendor>().ToTable("vendor");
+        builder.Entity<Category>().ToTable("category");
+        builder.Entity<MaintenanceStatus>().ToTable("maintenance_status");
+        builder.Entity<Device>().ToTable("device");
+        builder.Entity<Stock>().ToTable("stock");
+        builder.Entity<DeviceParameter>().ToTable("device_parameter");
+        builder.Entity<DeviceCategory>().ToTable("device_category");
+
+        builder.Entity<Vendor>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            e.HasIndex(x => x.Guid).IsUnique();
+            e.HasIndex(x => x.Name).IsUnique();
+        });
+
+        builder.Entity<Category>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(256).IsRequired();
+            e.HasIndex(x => x.Name).IsUnique();
+            e.Property(x => x.Description).HasMaxLength(2000);
+            e.HasIndex(x => x.Guid).IsUnique();
+        });
+
+        builder.Entity<MaintenanceStatus>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(128).IsRequired();
+            e.Property(x => x.Description).HasMaxLength(2000);
+            e.HasIndex(x => x.Uuid).IsUnique();
+            e.HasIndex(x => x.Name).IsUnique();
+        });
+
+        builder.Entity<Device>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SerialNumber).HasMaxLength(256).IsRequired();
+            e.HasIndex(x => x.Uuid).IsUnique();
+            e.HasIndex(x => x.SerialNumber).IsUnique();
+
+            e.Property(x => x.DeviceName).HasMaxLength(512);
+            e.Property(x => x.DeviceDescription).HasMaxLength(4000);
+            e.Property(x => x.PhotoUrl).HasMaxLength(2000);
+
+            e.Property(x => x.PurchasePrice).HasPrecision(18, 2);
+            e.Property(x => x.PurchaseDate);
+
+            e.HasOne(x => x.Vendor)
+                .WithMany(v => v.Devices)
+                .HasForeignKey(x => x.VendorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.MaintenanceStatus)
+                .WithMany(ms => ms.Devices)
+                .HasForeignKey(x => x.MaintenanceStatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.Stock)
+                .WithOne(s => s.Device)
+                .HasForeignKey<Stock>(s => s.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Stock>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Uuid).IsUnique();
+            e.HasIndex(x => x.DeviceId).IsUnique(); // one-to-one
+
+            e.Property(x => x.StockCount).HasPrecision(18, 3);
+            e.Property(x => x.UnitStockType).HasConversion<string>().HasMaxLength(32).IsRequired();
+        });
+
+        builder.Entity<DeviceParameter>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.ParamKey).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Value).HasMaxLength(4000).IsRequired();
+
+            e.HasOne(x => x.Device)
+                .WithMany(d => d.Parameters)
+                .HasForeignKey(x => x.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasIndex(x => new { x.DeviceId, x.ParamKey }).IsUnique();
+        });
+
+        builder.Entity<DeviceCategory>(e =>
+        {
+            e.HasKey(x => x.Id);
+
+            e.HasOne(x => x.Device)
+                .WithMany(d => d.DeviceCategories)
+                .HasForeignKey(x => x.DeviceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(x => x.Category)
+                .WithMany(c => c.DeviceCategories)
+                .HasForeignKey(x => x.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasIndex(x => new { x.DeviceId, x.CategoryId }).IsUnique();
+        });
+    }
+
+    private static void AddAuthModuleTableDef(ModelBuilder builder)
+    {
+        builder.Entity<User>().ToTable("users");
+        builder.Entity<Group>().ToTable("groups");
+        builder.Entity<GroupRole>().ToTable("group_roles");
+        builder.Entity<GroupUser>().ToTable("group_users");
+
+        builder.Entity<User>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.KeycloakUserId).IsUnique();
+            
+            e.HasMany(x => x.GroupUsers)
+                .WithOne(x => x.User)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        builder.Entity<Group>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.Guid).IsUnique();
+            
+            e.HasMany(x => x.GroupRoles)
+                .WithOne(x => x.Group)
+                .HasForeignKey(x => x.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.GroupUsers)
+                .WithOne(x => x.Group)
+                .HasForeignKey(x => x.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<GroupRole>(e =>
+        {
+            e.HasKey(x => new { x.GroupId, x.RoleId });
+            e.Property(x => x.RoleId).HasConversion<int>();
+            
+        });
+        
+        builder.Entity<GroupUser>(e =>
+        {
+            e.HasKey(x => new { x.GroupId, x.UserId });
+            e.HasIndex(x => x.UserId);
         });
     }
 }
