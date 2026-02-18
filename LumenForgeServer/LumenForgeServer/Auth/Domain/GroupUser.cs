@@ -1,6 +1,6 @@
 using NodaTime;
 
-namespace LumenForgeServer.Common.Auth.Domain;
+namespace LumenForgeServer.Auth.Domain;
 
 public class GroupUser
 {

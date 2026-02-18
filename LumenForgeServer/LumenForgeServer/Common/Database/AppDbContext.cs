@@ -1,11 +1,11 @@
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Billing.Domain;
-using LumenForgeServer.Common.Auth.Domain;
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Maintenance.Domain;
 using LumenForgeServer.Rentals.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace LumenForgeServer.Common.Persistance;
+namespace LumenForgeServer.Common.Database;
 
 public class AppDbContext : DbContext
 {

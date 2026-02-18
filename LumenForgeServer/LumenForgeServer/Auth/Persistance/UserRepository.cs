@@ -1,7 +1,7 @@
-using LumenForgeServer.Common.Auth.Domain;
-using LumenForgeServer.Common.Persistance;
+using LumenForgeServer.Auth.Domain;
+using LumenForgeServer.Common.Database;
 
-namespace LumenForgeServer.Common.Auth.Persistance;
+namespace LumenForgeServer.Auth.Persistance;
 
 public sealed class UserRepository(AppDbContext _db) : IUserRepository
     

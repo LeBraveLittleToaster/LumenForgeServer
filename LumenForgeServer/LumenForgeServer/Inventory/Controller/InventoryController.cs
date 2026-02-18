@@ -1,4 +1,4 @@
-using LumenForgeServer.Common.Auth;
+using LumenForgeServer.Auth;
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.View;

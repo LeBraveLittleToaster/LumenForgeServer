@@ -1,4 +1,4 @@
-namespace LumenForgeServer.Common.Auth.Domain;
+namespace LumenForgeServer.Auth.Domain;
 
 public enum Role
 {

@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using System.Text.Json;
-using LumenForgeServer.Common.Auth;
+using LumenForgeServer.Auth.Domain.Session;
+using LumenForgeServer.Common.Database;
 using LumenForgeServer.Common.Exceptions;
-using LumenForgeServer.Common.Persistance;
 using LumenForgeServer.Inventory.Controller;
 using LumenForgeServer.Inventory.Persistance;
 using LumenForgeServer.Inventory.Service;
@@ -89,7 +89,7 @@ public static class DiRegistration
     public static void AddAuthenticationJwt(WebApplicationBuilder builder)
     {
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddScoped<ICurrentUser, CurrentUser>();
+        builder.Services.AddScoped<IKeycloakUser, KeycloakUser>();
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

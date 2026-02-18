@@ -1,6 +1,6 @@
-using LumenForgeServer.Common.Auth.Domain;
+using LumenForgeServer.Auth.Domain;
 
-namespace LumenForgeServer.Common.Auth.Persistance;
+namespace LumenForgeServer.Auth.Persistance;
 
 public interface IUserRepository
 {

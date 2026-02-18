@@ -1,9 +1,7 @@
 using LumenForgeServer.Inventory.Dto.Create;
-using LumenForgeServer.Inventory.Factory;
 using LumenForgeServer.Inventory.Service;
-using Microsoft.EntityFrameworkCore;
 
-namespace LumenForgeServer.Common.Persistance;
+namespace LumenForgeServer.Common.Database;
 
 public static class DevDbSeeder
 {

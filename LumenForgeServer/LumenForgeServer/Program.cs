@@ -1,8 +1,7 @@
 using LumenForgeServer.Common;
-using LumenForgeServer.Common.Persistance;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-
+using LumenForgeServer.Common.Database;
 
 
 var builder = WebApplication.CreateBuilder(args);

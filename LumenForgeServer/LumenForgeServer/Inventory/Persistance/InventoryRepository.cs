@@ -1,4 +1,4 @@
-using LumenForgeServer.Common.Persistance;
+using LumenForgeServer.Common.Database;
 using LumenForgeServer.Inventory.Domain;
 using Microsoft.EntityFrameworkCore;
 

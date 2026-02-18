@@ -1,6 +1,4 @@
-﻿using System.Reflection.Metadata;
-
-namespace LumenForgeServer.Common.Auth;
+﻿namespace LumenForgeServer.Auth;
 
 public static class AuthConstants
 {

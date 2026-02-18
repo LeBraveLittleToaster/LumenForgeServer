@@ -1,12 +1,12 @@
 ﻿using System.Security.Claims;
 
-namespace LumenForgeServer.Common.Auth
+namespace LumenForgeServer.Auth.Domain.Session
 {
-    public class CurrentUser : ICurrentUser
+    public class KeycloakUser : IKeycloakUser
     {
         public string? UserId { get; }
 
-        public CurrentUser(IHttpContextAccessor accessor)
+        public KeycloakUser(IHttpContextAccessor accessor)
         {
             UserId = accessor.HttpContext?.User.FindFirstValue("sub");
         }
