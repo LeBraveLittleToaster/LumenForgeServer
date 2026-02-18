@@ -19,9 +19,4 @@ public static class CategoryFactory
             Description = dto.Description,
         };
     }
-
-    public static CategoryViewDto FromCategory(Category category)
-    {
-        return new CategoryViewDto(category.Guid, category.Name, category.Description);
-    }
 }

@@ -1,6 +1,9 @@
 using System.Security.Claims;
 using System.Text.Json;
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Domain.Session;
+using LumenForgeServer.Auth.Persistance;
+using LumenForgeServer.Auth.Service;
 using LumenForgeServer.Common.Database;
 using LumenForgeServer.Common.Exceptions;
 using LumenForgeServer.Inventory.Controller;
@@ -26,11 +29,13 @@ public static class DiRegistration
     public static void RegisterRepositories(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
     }
 
     public static void RegisterServices(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<InventoryService>();
+        builder.Services.AddScoped<UserService>();
     }
 
     public static void RegisterExceptionHandler(WebApplicationBuilder builder)
@@ -111,10 +116,16 @@ public static class DiRegistration
                         var identity = ctx.Principal?.Identity as ClaimsIdentity;
                         if (identity is null) return;
 
+                        var keycloakUserId = ctx.Principal?.FindFirst("sub")?.Value;
+                        if (keycloakUserId is null) return;
+
                         AddKeycloakRoles(identity);
-                        
-                        // Load all groups the user is part of and add it to there roles
-                        //identity.AddClaim(new Claim(ClaimTypes.Role, "Here the role"));
+
+                        var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
+                        var roles = await userService.GetRolesForKeycloakId(keycloakUserId, CancellationToken.None);
+
+                        identity.AddClaims(
+                            roles.Select(x => new Claim(ClaimTypes.Role, x.ToString())).ToList());
                     }
                 };
                 options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();

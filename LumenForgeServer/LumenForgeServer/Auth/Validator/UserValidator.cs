@@ -6,9 +6,9 @@ namespace LumenForgeServer.Auth.Validator;
 
 public static class UserValidator
 {
-    public static void ValidateAddUser(AddDtos addDtos)
+    public static void ValidateAddUser(AddUserDto addUserDto)
     {
-        if (addDtos.keycloakId.Length is 0)
+        if (addUserDto.keycloakId.Length is 0)
         {
             throw new ValidationException("Failed to validate Add User Dto",
                 errors: new Dictionary<string, string[]>

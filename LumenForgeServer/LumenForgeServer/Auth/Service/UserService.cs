@@ -1,5 +1,6 @@
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Factory;
 using LumenForgeServer.Auth.Persistance;
 using LumenForgeServer.Auth.Validator;
 using LumenForgeServer.Common.Exceptions;
@@ -11,13 +12,10 @@ namespace LumenForgeServer.Auth.Service;
 public class UserService(IUserRepository userRepository)
 {
 
-    public async Task<User?> AddUser(AddDtos addDtos, CancellationToken ct) 
+    public async Task<User?> AddUser(AddUserDto addUserDto, CancellationToken ct)
     {
-        var user = new User
-        {
-            KeycloakUserId = addDtos.keycloakId
-        };
-        UserValidator.ValidateAddUser(addDtos);
+        var user = UserFactory.BuildUser(addUserDto);
+        UserValidator.ValidateAddUser(addUserDto);
         await userRepository.AddUserAsync(user, ct);
         return user;
     }
