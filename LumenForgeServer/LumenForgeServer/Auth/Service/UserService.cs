@@ -12,11 +12,21 @@ namespace LumenForgeServer.Auth.Service;
 public class UserService(IUserRepository userRepository)
 {
 
+    public async Task<User?> GetUserByKeycloakId(string keycloakId, CancellationToken ct)
+    {
+        var user = await userRepository.TryGetUserByKeycloakIdAsync(keycloakId, ct);
+        return user ?? throw new NotFoundException($"User with Keycloak ID {keycloakId} not found.");
+    }
+
     public async Task<User?> AddUser(AddUserDto addUserDto, CancellationToken ct)
     {
         var user = UserFactory.BuildUser(addUserDto);
+        
         UserValidator.ValidateAddUser(addUserDto);
+        
         await userRepository.AddUserAsync(user, ct);
+        await userRepository.SaveChangesAsync(ct);
+        
         return user;
     }
 
@@ -25,6 +35,7 @@ public class UserService(IUserRepository userRepository)
         UserValidator.ValidateAssignUserToGroup(dto);
         
         await userRepository.AssignUserToGroupAsync(dto.assigneeKeycloakId, dto.keycloakId, dto.groupGuid, ct);
+        await userRepository.SaveChangesAsync(ct);
     }
     
     public async Task<HashSet<Role>> GetRolesForKeycloakId(string keycloakId, CancellationToken ct)

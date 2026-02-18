@@ -23,7 +23,16 @@ public sealed class UserRepository(AppDbContext _db) : IUserRepository
 
     public Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        return _db.Users
+            .Where(u => u.KeycloakUserId == keycloakId)
+            .SingleOrDefaultAsync(ct);
+    }
+
+    public Task<User?> TryGetUserAndGroupsByKeycloakIdAsync(string keycloakId, CancellationToken ct)
+    {
+        return _db.Users
+            .Where(u => u.KeycloakUserId == keycloakId)
+            .SingleOrDefaultAsync(ct);
     }
 
     public async Task<HashSet<Role>> GetRolesForKeycloakIdAsync(string keycloakId, CancellationToken ct)
@@ -100,8 +109,6 @@ public sealed class UserRepository(AppDbContext _db) : IUserRepository
             GroupId = groupId,
             JoinedAt = SystemClock.Instance.GetCurrentInstant()
         }, ct);
-
-        await _db.SaveChangesAsync(ct);
     }
     
     public Task RemoveUserFromGroupAsync(Group group, User user, CancellationToken ct)
@@ -117,5 +124,10 @@ public sealed class UserRepository(AppDbContext _db) : IUserRepository
     public Task<bool> HasGroupRoleAsync(Group group, Role role, CancellationToken ct)
     {
         throw new NotImplementedException();
+    }
+
+    public Task SaveChangesAsync(CancellationToken ct)
+    {
+        return _db.SaveChangesAsync(ct);
     }
 }

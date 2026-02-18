@@ -6,4 +6,5 @@ public class GroupRole
     public Role RoleId { get; set; }
 
     public Group Group { get; set; } = null!;
+    
 }

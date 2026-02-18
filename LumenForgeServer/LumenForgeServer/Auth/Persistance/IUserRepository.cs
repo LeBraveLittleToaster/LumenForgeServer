@@ -22,4 +22,6 @@ public interface IUserRepository
     
     Task<bool> IsUserInGroupAsync(User user, Group group, CancellationToken ct);
     Task<bool> HasGroupRoleAsync(Group group, Role role, CancellationToken ct);
+
+    Task SaveChangesAsync(CancellationToken ct);
 }
