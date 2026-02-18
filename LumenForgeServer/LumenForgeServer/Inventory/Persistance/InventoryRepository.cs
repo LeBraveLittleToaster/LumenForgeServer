@@ -38,4 +38,9 @@ public sealed class InventoryRepository(AppDbContext _db) : IInventoryRepository
     {
         return _db.Categories.AddAsync(category, ct).AsTask();
     }
+
+    public Task SaveChangesAsync(CancellationToken ct)
+    {
+        return _db.SaveChangesAsync(ct);
+    }
 }

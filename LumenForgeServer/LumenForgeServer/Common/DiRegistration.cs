@@ -11,6 +11,7 @@ using LumenForgeServer.Inventory.Persistance;
 using LumenForgeServer.Inventory.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
@@ -24,6 +25,11 @@ public static class DiRegistration
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("DB_NAME"), o => o.UseNodaTime());
         });
+    }
+
+    public static void RegisterMemoryCache(WebApplicationBuilder builder)
+    {
+        builder.Services.AddMemoryCache();
     }
 
     public static void RegisterRepositories(WebApplicationBuilder builder)
@@ -119,13 +125,28 @@ public static class DiRegistration
                         var keycloakUserId = ctx.Principal?.FindFirst("sub")?.Value;
                         if (keycloakUserId is null) return;
 
-                        AddKeycloakRoles(identity);
+                        var jti = ctx.Principal?.FindFirst("jti")?.Value ?? "no-jti";
+                        var cacheKey = $"roles:{keycloakUserId}:{jti}";
 
-                        var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
-                        var roles = await userService.GetRolesForKeycloakId(keycloakUserId, CancellationToken.None);
+                        var cache= ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+                        if (!cache.TryGetValue(cacheKey, out string[]? roles) || roles is null)
+                        {
+                            AddKeycloakRoles(identity);
+
+                            var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
+                            var dbRoles = await userService.GetRolesForKeycloakId(keycloakUserId, ctx.HttpContext.RequestAborted);
+
+                            roles = dbRoles.Select(r => r.ToString()).Distinct().ToArray();
+
+                            cache.Set(cacheKey, roles, new MemoryCacheEntryOptions
+                            {
+                                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
+                            });
+                        }
 
                         identity.AddClaims(
-                            roles.Select(x => new Claim(ClaimTypes.Role, x.ToString())).ToList());
+                            roles.Select(x => new Claim(ClaimTypes.Role, x)));
+
                     }
                 };
                 options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();

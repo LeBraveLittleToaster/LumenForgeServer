@@ -6,7 +6,7 @@ namespace LumenForgeServer.Inventory.Factory;
 
 public static class VendorFactory
 {
-    public static Vendor Create(CreateVendorDto dto)
+    internal static Vendor Create(CreateVendorDto dto)
     {
         var dateNow = SystemClock.Instance.GetCurrentInstant();
         var guid = Guid.CreateVersion7();

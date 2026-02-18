@@ -1,5 +1,8 @@
 namespace LumenForgeServer.Auth.Dto;
 
-public record AssignUserToGroupDto(string? assigneeKeycloakId, string keycloakId, Guid groupGuid)
+public record AssignUserToGroupDto
 {
+    public string? assigneeKeycloakId;
+    public required string keycloakId;
+    public Guid groupGuid;
 }

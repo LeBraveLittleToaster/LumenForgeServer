@@ -7,7 +7,7 @@ namespace LumenForgeServer.Inventory.Factory;
 
 public static class CategoryFactory
 {
-    public static Category Create(CreateCategoryDTO dto)
+    internal static Category Create(CreateCategoryDTO dto)
     {
         var now = SystemClock.Instance.GetCurrentInstant();
         return new Category
@@ -17,6 +17,16 @@ public static class CategoryFactory
             Guid = Guid.NewGuid(),
             Name = dto.Name,
             Description = dto.Description,
+        };
+    }
+
+    internal static CategoryViewDto FromCategory(Category category)
+    {
+        return new CategoryViewDto
+        {
+            Guid = category.Guid,
+            Name = category.Name,
+            Description = category.Description
         };
     }
 }

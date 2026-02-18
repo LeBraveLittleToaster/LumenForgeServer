@@ -5,7 +5,7 @@ namespace LumenForgeServer.Inventory.Factory;
 
 public static class DeviceFactory
 {
-    public static Device Create(CreateDeviceDto dto, long vendorId, IReadOnlyList<long> categoryIds)
+    internal static Device Create(CreateDeviceDto dto, long vendorId, IReadOnlyList<long> categoryIds)
     {
         return new Device
         {

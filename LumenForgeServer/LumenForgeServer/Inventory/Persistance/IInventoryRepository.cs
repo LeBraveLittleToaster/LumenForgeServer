@@ -15,5 +15,7 @@ public interface IInventoryRepository
     
 
     Task AddCategory(Category category, CancellationToken ct);
+
+    Task SaveChangesAsync(CancellationToken ct);
 }
 
