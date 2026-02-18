@@ -8,7 +8,7 @@ public static class VendorFactory
 {
     public static Vendor Create(CreateVendorDto dto)
     {
-        var dateNow = new Instant();
+        var dateNow = SystemClock.Instance.GetCurrentInstant();
         var guid = Guid.CreateVersion7();
         Console.WriteLine(guid.ToString());
         return new Vendor

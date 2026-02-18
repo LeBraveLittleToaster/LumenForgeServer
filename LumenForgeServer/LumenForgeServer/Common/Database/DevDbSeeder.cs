@@ -5,7 +5,7 @@ namespace LumenForgeServer.Common.Database;
 
 public static class DevDbSeeder
 {
-    public static async Task DeleteAndSeedDBAsync(IServiceProvider serviceProvider)
+    public static async Task DeleteAndSeedDbAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
 

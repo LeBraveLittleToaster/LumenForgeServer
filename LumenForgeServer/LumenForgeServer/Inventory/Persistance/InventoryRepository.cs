@@ -33,10 +33,7 @@ public sealed class InventoryRepository(AppDbContext _db) : IInventoryRepository
 
     public Task AddDeviceAsync(Device device, CancellationToken ct)
         => _db.Devices.AddAsync(device, ct).AsTask();
-
-    public Task SaveChangesAsync(CancellationToken ct)
-        => _db.SaveChangesAsync(ct);
-
+    
     public Task AddCategory(Category category, CancellationToken ct)
     {
         return _db.Categories.AddAsync(category, ct).AsTask();

@@ -112,6 +112,7 @@ public static class DiRegistration
                         if (identity is null) return;
 
                         AddKeycloakRoles(identity);
+                        
                         // Load all groups the user is part of and add it to there roles
                         //identity.AddClaim(new Claim(ClaimTypes.Role, "Here the role"));
                     }

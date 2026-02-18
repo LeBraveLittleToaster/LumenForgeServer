@@ -27,7 +27,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    await DevDbSeeder.DeleteAndSeedDBAsync(app.Services);
+    await DevDbSeeder.DeleteAndSeedDbAsync(app.Services);
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {

@@ -9,7 +9,7 @@ public static class CategoryFactory
 {
     public static Category Create(CreateCategoryDTO dto)
     {
-        var now = new Instant();
+        var now = SystemClock.Instance.GetCurrentInstant();
         return new Category
         {
             CreatedAt = now,
