@@ -106,12 +106,12 @@ public static class DiRegistration
             .AddJwtBearer(options =>
             {
                 options.Authority = builder.Configuration["Keycloak:Issuer"]!;
-                options.Audience = builder.Configuration["Keycloak:Audience"];
 
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
+                    ValidateAudience = false,
                     ValidIssuer = builder.Configuration["Keycloak:Issuer"],
-                    RoleClaimType = "roles",
+                    RoleClaimType = ClaimTypes.Role,
                     NameClaimType = "preferred_username"
                 };
 
@@ -122,16 +122,18 @@ public static class DiRegistration
                         var identity = ctx.Principal?.Identity as ClaimsIdentity;
                         if (identity is null) return;
 
-                        var keycloakUserId = ctx.Principal?.FindFirst("sub")?.Value;
+                        var keycloakUserId = ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (keycloakUserId is null) return;
 
                         var jti = ctx.Principal?.FindFirst("jti")?.Value ?? "no-jti";
                         var cacheKey = $"roles:{keycloakUserId}:{jti}";
-
+                        
+                        AddKeycloakRoles(identity);
+                        
                         var cache= ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
                         if (!cache.TryGetValue(cacheKey, out string[]? roles) || roles is null)
                         {
-                            AddKeycloakRoles(identity);
+                            
 
                             var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
                             var dbRoles = await userService.GetRolesForKeycloakId(keycloakUserId, ctx.HttpContext.RequestAborted);
@@ -146,7 +148,6 @@ public static class DiRegistration
 
                         identity.AddClaims(
                             roles.Select(x => new Claim(ClaimTypes.Role, x)));
-
                     }
                 };
                 options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();

@@ -36,4 +36,8 @@
     <Folder Include="Inventory\Dto\Update\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="keycloak\realms\lumenforge-realm.json" />
+  </ItemGroup>
+
 </Project>

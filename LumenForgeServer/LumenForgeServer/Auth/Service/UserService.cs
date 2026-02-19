@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace LumenForgeServer.Auth.Service;
 
 
-public class UserService(IUserRepository userRepository)
+public class UserService(IUserRepository userRepository) : ControllerBase
 {
 
     public async Task<User?> GetUserByKeycloakId(string keycloakId, CancellationToken ct)
