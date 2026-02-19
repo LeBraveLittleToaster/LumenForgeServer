@@ -11,13 +11,13 @@ public class HealthTests : IClassFixture<WebApplicationFactory<Program>>
 
     public HealthTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.CreateClient(); // base address is set automatically
+        _client = factory.CreateClient();
     }
 
     [Fact]
     public async Task GET_health_returns_ok()
     {
-        var resp = await _client.GetAsync("/health");
+        var resp = await _client.GetAsync("/api/v1/health");
 
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
