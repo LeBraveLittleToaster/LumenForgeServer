@@ -8,5 +8,5 @@ public record AddUserDto
     /// <summary>
     /// Keycloak subject identifier ("sub") for the user to create.
     /// </summary>
-    public required string keycloakId { get; init; }
+    public required string userKcId { get; init; }
 }

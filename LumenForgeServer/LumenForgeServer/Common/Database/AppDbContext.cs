@@ -518,7 +518,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         builder.Entity<User>(e =>
         {
             e.HasKey(x => x.Id);
-            e.HasIndex(x => x.KeycloakUserId).IsUnique();
+            e.HasIndex(x => x.UserKcId).IsUnique();
             
             e.HasMany(x => x.GroupUsers)
                 .WithOne(x => x.User)

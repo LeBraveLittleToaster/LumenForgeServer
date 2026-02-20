@@ -18,7 +18,7 @@ public class User
     /// <summary>
     /// Keycloak subject identifier ("sub") for the user.
     /// </summary>
-    public required string KeycloakUserId { get; set; }
+    public required string UserKcId { get; set; }
     /// <summary>
     /// Group memberships for the user.
     /// </summary>

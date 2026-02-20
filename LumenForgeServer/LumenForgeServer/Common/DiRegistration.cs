@@ -167,10 +167,8 @@ public static class DiRegistration
                         var cache= ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
                         if (!cache.TryGetValue(cacheKey, out string[]? roles) || roles is null)
                         {
-                            
-
                             var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
-                            var dbRoles = await userService.GetRolesForKeycloakId(keycloakUserId, ctx.HttpContext.RequestAborted);
+                            var dbRoles = await userService.GetRolesForKcId(keycloakUserId, ctx.HttpContext.RequestAborted);
 
                             roles = dbRoles.Select(r => r.ToString()).Distinct().ToArray();
 

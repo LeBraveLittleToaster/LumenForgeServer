@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using LumenForgeServer.IntegrationTests.Client;
+using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Utils;
 
 namespace LumenForgeServer.IntegrationTests;

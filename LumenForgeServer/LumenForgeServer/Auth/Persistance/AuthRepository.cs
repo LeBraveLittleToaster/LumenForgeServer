@@ -22,7 +22,6 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     public async Task AddUserAsync(User user, CancellationToken ct)
     {
         await _db.Users.AddAsync(user, ct).AsTask();
-        await _db.SaveChangesAsync(ct);
     }
 
     /// <summary>
@@ -42,10 +41,10 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The user if found; otherwise <c>null</c>.</returns>
-    public Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
+    public async Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
-        return _db.Users
-            .Where(u => u.KeycloakUserId == keycloakId)
+        return await _db.Users
+            .Where(u => u.UserKcId == keycloakId)
             .SingleOrDefaultAsync(ct);
     }
 
@@ -61,7 +60,7 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     public Task<User?> TryGetUserAndGroupsByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         return _db.Users
-            .Where(u => u.KeycloakUserId == keycloakId)
+            .Where(u => u.UserKcId == keycloakId)
             .SingleOrDefaultAsync(ct);
     }
 
@@ -71,10 +70,10 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Distinct roles assigned to the user.</returns>
-    public async Task<HashSet<Role>> GetRolesForKeycloakIdAsync(string keycloakId, CancellationToken ct)
+    public async Task<HashSet<Role>> GetRolesForKcIdAsync(string keycloakId, CancellationToken ct)
     {
         return await _db.Users
-            .Where(u => u.KeycloakUserId == keycloakId)
+            .Where(u => u.UserKcId == keycloakId)
             .SelectMany(u => u.GroupUsers)
             .SelectMany(gu => gu.Group.GroupRoles)
             .Select(gr => gr.RoleId)
@@ -111,7 +110,7 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     public async Task<long> GetUserIdByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         var userId = await _db.Users
-            .Where(u => u.KeycloakUserId == keycloakId)
+            .Where(u => u.UserKcId == keycloakId)
             .Select(u => u.Id)
             .SingleOrDefaultAsync(ct);
         return userId == 0 

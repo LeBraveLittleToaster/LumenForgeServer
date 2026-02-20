@@ -45,7 +45,7 @@ public interface IAuthRepository
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Distinct roles assigned to the user.</returns>
-    Task<HashSet<Role>> GetRolesForKeycloakIdAsync(string keycloakId, CancellationToken ct);
+    Task<HashSet<Role>> GetRolesForKcIdAsync(string keycloakId, CancellationToken ct);
     
     /// <summary>
     /// Resolves the internal group id for a group guid.

@@ -8,13 +8,9 @@ public record AssignUserToGroupDto
     /// <summary>
     /// Optional Keycloak subject identifier for the actor performing the assignment.
     /// </summary>
-    public string? assigneeKeycloakId;
+    public string? assigneeKcId;
     /// <summary>
     /// Keycloak subject identifier for the user being assigned.
     /// </summary>
-    public required string keycloakId;
-    /// <summary>
-    /// Group identifier for the target group.
-    /// </summary>
-    public Guid groupGuid;
+    public required string userKcId;
 }

@@ -35,11 +35,9 @@ public class GroupService(IAuthRepository authRepository) : ControllerBase
     /// <returns>The created user.</returns>
     /// <exception cref="ValidationException">Thrown when the payload fails validation.</exception>
     /// <exception cref="Microsoft.EntityFrameworkCore.DbUpdateException">Thrown when persistence fails.</exception>
-    public async Task<User?> AddUser(AddUserDto addUserDto, CancellationToken ct)
+    public async Task<User?> AddUser(string userKcId, CancellationToken ct)
     {
-        var user = UserFactory.BuildUser(addUserDto);
-        
-        UserValidator.ValidateAddUser(addUserDto);
+        var user = UserFactory.BuildUser(userKcId);
         
         await authRepository.AddUserAsync(user, ct);
         await authRepository.SaveChangesAsync(ct);
@@ -54,22 +52,9 @@ public class GroupService(IAuthRepository authRepository) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <exception cref="ValidationException">Thrown when the payload fails validation.</exception>
     /// <exception cref="NotFoundException">Thrown when the user or group cannot be found.</exception>
-    public async Task AssignUserToGroup(AssignUserToGroupDto dto, CancellationToken ct)
+    public async Task AssignUserToGroup(string? assigneeKcId, string userKcId, Guid groupGuid, CancellationToken ct)
     {
-        UserValidator.ValidateAssignUserToGroup(dto);
-        
-        await authRepository.AssignUserToGroupAsync(dto.assigneeKeycloakId, dto.keycloakId, dto.groupGuid, ct);
+        await authRepository.AssignUserToGroupAsync(assigneeKcId, userKcId, groupGuid, ct);
         await authRepository.SaveChangesAsync(ct);
-    }
-    
-    /// <summary>
-    /// Retrieves all roles assigned to a user via group memberships.
-    /// </summary>
-    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>Distinct roles assigned to the user.</returns>
-    public async Task<HashSet<Role>> GetRolesForKeycloakId(string keycloakId, CancellationToken ct)
-    {
-        return await authRepository.GetRolesForKeycloakIdAsync(keycloakId,ct);
     }
 }
