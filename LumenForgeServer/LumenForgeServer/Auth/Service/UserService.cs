@@ -44,6 +44,19 @@ public class UserService(IAuthRepository authRepository) : ControllerBase
         
         return user;
     }
+
+    /// <summary>
+    /// Deletes a user record from the database.
+    /// </summary>
+    /// <param name="userKcId">Stable Keycloak subject identifier</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created user.</returns>
+    /// <exception cref="ValidationException">Thrown when the payload fails validation.</exception>
+    public async Task DeleteUserByKcId(string userKcId, CancellationToken ct)
+    {
+        await authRepository.DeleteUserByKcIdAsync(userKcId, ct);
+        await authRepository.SaveChangesAsync(ct);
+    }
     
     /// <summary>
     /// Retrieves all roles assigned to a user via group memberships.

@@ -76,6 +76,7 @@ public static class DiRegistration
                 context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
             };
         });
+        builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
         builder.Services.AddExceptionHandler<UniqueConstraintExceptionHandler>();
         builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

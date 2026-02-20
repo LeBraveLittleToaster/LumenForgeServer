@@ -31,7 +31,7 @@ public interface IAuthRepository
     /// <exception cref="LumenForgeServer.Common.Exceptions.NotFoundException">
     /// Thrown when the user cannot be found.
     /// </exception>
-    Task DeleteUserByKeycloakIdAsync(string keycloakId, CancellationToken ct);
+    Task DeleteUserByKcIdAsync(string userKcId, CancellationToken ct);
     /// <summary>
     /// Attempts to retrieve a user by Keycloak subject identifier.
     /// </summary>

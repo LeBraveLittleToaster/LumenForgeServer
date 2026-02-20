@@ -30,9 +30,12 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="keycloakId">Keycloak subject identifier to delete.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
-    public Task DeleteUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
+    public async Task DeleteUserByKcIdAsync(string userKcId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var user = await _db.Users
+            .SingleOrDefaultAsync(u => u.UserKcId == userKcId, ct);
+        if( user == null) throw new NotFoundException($"User with keycloakId {userKcId} not found");
+        _db.Users.Remove(user);
     }
 
     /// <summary>

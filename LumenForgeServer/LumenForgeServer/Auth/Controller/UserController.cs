@@ -2,6 +2,7 @@ using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Service;
 using LumenForgeServer.Auth.Validator;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumenForgeServer.Auth.Controller;
@@ -62,6 +63,27 @@ public class UserController(UserService userService) : ControllerBase
         
         var user = await userService.GetUserByKeycloakId(userKcId, ct);
         return new JsonResult(user);
+    }
+    
+    /// <summary>
+    /// Deletes a user by Keycloak subject identifier from the local database. User could be still present in keycloak.
+    /// </summary>
+    /// <param name="userKcId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the user payload.</returns>
+    /// <exception cref="LumenForgeServer.Common.Exceptions.NotFoundException">
+    /// Thrown when the user cannot be found.
+    /// </exception>
+    [HttpDelete("{userKcId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> DeleteUserByKcId(string userKcId, CancellationToken ct)
+    {
+        UserRequestValidator.ValidateDeleteUserByKcId();
+        
+        await userService.DeleteUserByKcId(userKcId, ct);
+        return Ok();
     }
 
     /// <summary>

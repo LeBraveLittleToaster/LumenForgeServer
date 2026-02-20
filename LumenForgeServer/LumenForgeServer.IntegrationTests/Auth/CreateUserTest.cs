@@ -26,32 +26,33 @@ public class CreateUserTest : IAsyncLifetime
     public async Task POST_new_user_creates_user()
     {
         var myKeycloakId = _fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
-
-        var resp = await _fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
+        
+        var respDelete = await _fixture.ApiClient.DeleteAsync($"/api/v1/auth/users/{myKeycloakId}");
+        
+        respDelete.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
+        
+        var respPut1 = await _fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
         {
             userKcId = myKeycloakId
         });
 
-        resp.StatusCode.Should().Be(HttpStatusCode.Created);
+        respPut1.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var userFromDb = await _fixture.ApiClient.GetAsync($"\"/api/v1/auth/users/{myKeycloakId}");
+        var userFromDb = await _fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
         userFromDb.StatusCode.Should().Be(HttpStatusCode.OK);
         userFromDb.Content.Should().NotBeNull();
         
-        resp = await _fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
+        var respPut2 = await _fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
         {
             userKcId = myKeycloakId
         });
 
-        resp.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        respPut2.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     { 
-        _dbContext.Database.EnsureDeleted();
-        _dbContext.Database.EnsureCreated();
         
-        return Task.CompletedTask;
     }
 
     public Task DisposeAsync()

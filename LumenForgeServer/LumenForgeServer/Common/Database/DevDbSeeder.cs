@@ -50,7 +50,7 @@ public static class DevDbSeeder
             logger.LogInformation("Seeding dummy data...");
 
 
-            var vendor = inventoryService
+            var vendor = await inventoryService
                 .AddVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
             logger.LogInformation("Created Vendor: {vendor}", vendor);
             logger.LogInformation("Development database reset and seeding completed successfully.");

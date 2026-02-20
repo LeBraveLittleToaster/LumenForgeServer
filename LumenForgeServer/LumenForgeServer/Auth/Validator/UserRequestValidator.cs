@@ -31,4 +31,9 @@ public static class UserRequestValidator
     {
         
     }
+
+    public static void ValidateDeleteUserByKcId()
+    {
+        
+    }
 }
