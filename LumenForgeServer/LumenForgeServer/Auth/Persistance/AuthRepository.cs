@@ -6,21 +6,42 @@ using NodaTime;
 
 namespace LumenForgeServer.Auth.Persistance;
 
+/// <summary>
+/// EF Core-backed repository for auth users, groups, and roles.
+/// </summary>
 public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     
 {
     
+    /// <summary>
+    /// Adds a new user and immediately saves the change.
+    /// </summary>
+    /// <param name="user">User entity to persist.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="DbUpdateException">Thrown when persistence fails.</exception>
     public async Task AddUserAsync(User user, CancellationToken ct)
     {
         await _db.Users.AddAsync(user, ct).AsTask();
         await _db.SaveChangesAsync(ct);
     }
 
+    /// <summary>
+    /// Deletes a user by Keycloak subject identifier.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to delete.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task DeleteUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Attempts to retrieve a user by Keycloak subject identifier.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The user if found; otherwise <c>null</c>.</returns>
     public Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         return _db.Users
@@ -28,6 +49,15 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
             .SingleOrDefaultAsync(ct);
     }
 
+    /// <summary>
+    /// Attempts to retrieve a user and their group relationships by Keycloak subject identifier.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The user if found; otherwise <c>null</c>.</returns>
+    /// <remarks>
+    /// This query does not currently include navigation properties.
+    /// </remarks>
     public Task<User?> TryGetUserAndGroupsByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         return _db.Users
@@ -35,6 +65,12 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
             .SingleOrDefaultAsync(ct);
     }
 
+    /// <summary>
+    /// Retrieves all roles assigned to a user via group memberships.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Distinct roles assigned to the user.</returns>
     public async Task<HashSet<Role>> GetRolesForKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         return await _db.Users
@@ -46,6 +82,13 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
             .ToHashSetAsync(ct);
     }
 
+    /// <summary>
+    /// Resolves the internal group id for a group guid.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The internal group id.</returns>
+    /// <exception cref="NotFoundException">Thrown when the group cannot be found.</exception>
     public async Task<long> GetGroupIdByGuidAsync(Guid groupGuid, CancellationToken ct)
     {
         var groupId = await _db.Groups
@@ -58,6 +101,13 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
             : groupId;
     }
     
+    /// <summary>
+    /// Resolves the internal user id for a Keycloak subject identifier.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The internal user id.</returns>
+    /// <exception cref="NotFoundException">Thrown when the user cannot be found.</exception>
     public async Task<long> GetUserIdByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         var userId = await _db.Users
@@ -69,27 +119,60 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
             : userId;
     }
 
-
+    /// <summary>
+    /// Adds a new group to the persistence store.
+    /// </summary>
+    /// <param name="group">Group entity to persist.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task AddGroupAsync(Group group, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Deletes a group by guid.
+    /// </summary>
+    /// <param name="guid">Group guid to delete.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task DeleteGroupByGuidAsync(Guid guid, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Assigns a role to a group.
+    /// </summary>
+    /// <param name="group">Group receiving the role.</param>
+    /// <param name="role">Role to assign.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task AssignRoleToGroupAsync(Group group, Role role, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Removes a role assignment from a group.
+    /// </summary>
+    /// <param name="group">Group losing the role.</param>
+    /// <param name="role">Role to remove.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task RemoveRoleFromGroupAsync(Group group, Role role, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Assigns a user to a group by Keycloak subject identifier and group guid.
+    /// </summary>
+    /// <param name="assigneeKeycloakId">Optional Keycloak subject identifier for the actor performing the assignment.</param>
+    /// <param name="keycloakId">Keycloak subject identifier for the user being assigned.</param>
+    /// <param name="groupGuid">Target group guid.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotFoundException">Thrown when the user or group cannot be found.</exception>
     public async Task AssignUserToGroupAsync(string? assigneeKeycloakId, string keycloakId, Guid groupGuid, CancellationToken ct)
     {
         
@@ -111,21 +194,49 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
         }, ct);
     }
     
+    /// <summary>
+    /// Removes a user from a group.
+    /// </summary>
+    /// <param name="group">Group to remove the user from.</param>
+    /// <param name="user">User to remove.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task RemoveUserFromGroupAsync(Group group, User user, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Checks whether a user is a member of a group.
+    /// </summary>
+    /// <param name="user">User to check.</param>
+    /// <param name="group">Group to check.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns><c>true</c> if the user is in the group; otherwise <c>false</c>.</returns>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task<bool> IsUserInGroupAsync(User user, Group group, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Checks whether a group has a specific role assigned.
+    /// </summary>
+    /// <param name="group">Group to check.</param>
+    /// <param name="role">Role to check.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns><c>true</c> if the role is assigned; otherwise <c>false</c>.</returns>
+    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task<bool> HasGroupRoleAsync(Group group, Role role, CancellationToken ct)
     {
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Persists pending changes to the underlying data store.
+    /// </summary>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="DbUpdateException">Thrown when persistence fails.</exception>
     public Task SaveChangesAsync(CancellationToken ct)
     {
         return _db.SaveChangesAsync(ct);

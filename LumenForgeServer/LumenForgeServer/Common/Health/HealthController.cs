@@ -4,11 +4,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LumenForgeServer.Common.Health;
 
-
-[Route("api/v1/")]
+/// <summary>
+/// Health endpoints used for liveness checks and role-based access validation.
+/// </summary>
 [ApiController]
+[Route("api/v1/")]
 public class HealthController
 {
+    /// <summary>
+    /// Public health endpoint that returns a simple status payload.
+    /// </summary>
+    /// <returns>A JSON payload indicating service health.</returns>
     [Produces("application/json")]
     [HttpGet("health")]
     public ActionResult<IEnumerable<string>> GetHealth()
@@ -20,6 +26,10 @@ public class HealthController
         return new JsonResult(statusAggregate);
     }
     
+    /// <summary>
+    /// Health endpoint restricted to users with the REALM_USER role.
+    /// </summary>
+    /// <returns>A JSON payload indicating service health.</returns>
     [Authorize(Roles = "REALM_USER")]
     [Produces("application/json")]
     [HttpGet("health2")]
@@ -32,6 +42,10 @@ public class HealthController
         return new JsonResult(statusAggregate);
     }
     
+    /// <summary>
+    /// Health endpoint restricted to users with the REALM_WORKER role.
+    /// </summary>
+    /// <returns>A JSON payload indicating service health.</returns>
     [Authorize(Roles = "REALM_WORKER")]
     [Produces("application/json")]
     [HttpGet("health3")]

@@ -3,8 +3,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LumenForgeServer.Common.Exceptions
 {
+    /// <summary>
+    /// Handles <see cref="UniqueConstraintException"/> by returning a 409 ProblemDetails response.
+    /// </summary>
+    /// <remarks>
+    /// Maps unique constraint violations to HTTP 409 responses.
+    /// </remarks>
     internal sealed class UniqueConstraintExceptionHandler(IProblemDetailsService problemDetailsService, ILogger<UniqueConstraintExceptionHandler> logger) : IExceptionHandler
     {
+        /// <summary>
+        /// Attempts to handle a unique constraint exception.
+        /// </summary>
+        /// <param name="httpContext">Current HTTP context.</param>
+        /// <param name="exception">Exception to handle.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns><c>true</c> when the response was written; otherwise <c>false</c>.</returns>
         public async ValueTask<bool> TryHandleAsync(
             HttpContext httpContext,
             Exception exception,

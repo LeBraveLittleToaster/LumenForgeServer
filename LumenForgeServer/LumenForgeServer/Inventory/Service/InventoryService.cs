@@ -8,8 +8,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LumenForgeServer.Inventory.Service;
 
+/// <summary>
+/// Application service for inventory operations.
+/// </summary>
 public class InventoryService(IInventoryRepository repository)
 {
+    /// <summary>
+    /// Creates a device aggregate from a payload and persists it.
+    /// </summary>
+    /// <param name="dto">Payload containing device details.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created <see cref="Device"/> entity.</returns>
+    /// <exception cref="NotFoundException">
+    /// Thrown when the vendor or any category UUID cannot be resolved.
+    /// </exception>
+    /// <exception cref="ConflictException">Thrown when a unique constraint is violated.</exception>
     public async Task<Device> CreateDeviceAsync(CreateDeviceDto dto, CancellationToken ct)
     {
         var vendorId = await repository.TryGetVendorIdByUuidAsync(dto.vendorUuid, ct);
@@ -38,6 +51,13 @@ public class InventoryService(IInventoryRepository repository)
         return device;
     }
 
+    /// <summary>
+    /// Creates a vendor and persists it.
+    /// </summary>
+    /// <param name="dto">Payload containing vendor details.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created <see cref="Vendor"/> entity.</returns>
+    /// <exception cref="DbUpdateException">Thrown when persistence fails.</exception>
     public async Task<Vendor> AddVendor(CreateVendorDto dto, CancellationToken ct)
     {
         var vendor = VendorFactory.Create(dto);
@@ -46,6 +66,13 @@ public class InventoryService(IInventoryRepository repository)
         return vendor;
     }
 
+    /// <summary>
+    /// Creates a category and persists it.
+    /// </summary>
+    /// <param name="dto">Payload containing category details.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The created <see cref="Category"/> entity.</returns>
+    /// <exception cref="UniqueConstraintException">Thrown when a unique constraint is violated.</exception>
     public async Task<Category> AddCategory(CreateCategoryDTO dto, CancellationToken ct)
     {
         var category = CategoryFactory.Create(dto);
@@ -62,5 +89,4 @@ public class InventoryService(IInventoryRepository repository)
         return category;
     }
 }
-
 

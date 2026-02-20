@@ -3,8 +3,26 @@ using LumenForgeServer.Inventory.Service;
 
 namespace LumenForgeServer.Common.Database;
 
+/// <summary>
+/// Utility to reset and seed the development database with sample data.
+/// </summary>
 public static class DevDbSeeder
 {
+    /// <summary>
+    /// Deletes the database, recreates it, and inserts minimal seed data.
+    /// </summary>
+    /// <param name="serviceProvider">Service provider used to resolve scoped services.</param>
+    /// <returns>A task that completes when seeding is finished.</returns>
+    /// <remarks>
+    /// This uses <c>EnsureDeletedAsync</c> and <c>EnsureCreatedAsync</c> rather than migrations.
+    /// The current implementation does not await the vendor creation task.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when required services are missing from the service provider.
+    /// </exception>
+    /// <exception cref="Exception">
+    /// Re-throws any exception that occurs during delete, create, or seed operations.
+    /// </exception>
     public static async Task DeleteAndSeedDbAsync(IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();

@@ -17,8 +17,15 @@ using Microsoft.OpenApi;
 
 namespace LumenForgeServer.Common;
 
+/// <summary>
+/// Registers infrastructure services with the dependency injection container.
+/// </summary>
 public static class DiRegistration
 {
+    /// <summary>
+    /// Registers the EF Core database context.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterDbContext(WebApplicationBuilder builder)
     {
         builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -27,23 +34,39 @@ public static class DiRegistration
         });
     }
 
+    /// <summary>
+    /// Registers the in-memory cache.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterMemoryCache(WebApplicationBuilder builder)
     {
         builder.Services.AddMemoryCache();
     }
 
+    /// <summary>
+    /// Registers repository implementations.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterRepositories(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
         builder.Services.AddScoped<IAuthRepository, AuthRepository>();
     }
 
+    /// <summary>
+    /// Registers application services.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterServices(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<InventoryService>();
         builder.Services.AddScoped<UserService>();
     }
 
+    /// <summary>
+    /// Registers ProblemDetails and exception handlers.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterExceptionHandler(WebApplicationBuilder builder)
     {
         builder.Services.AddProblemDetails(configure =>
@@ -58,6 +81,13 @@ public static class DiRegistration
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     }
 
+    /// <summary>
+    /// Registers Swagger and OAuth2 definitions for Keycloak.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
+    /// <param name="keycloakAuthority">Keycloak base authority URL.</param>
+    /// <param name="keycloakClientId">Keycloak client id for Swagger UI (currently unused).</param>
+    /// <exception cref="UriFormatException">Thrown when the Keycloak authority is not a valid URI.</exception>
     public static void RegisterSwagger(WebApplicationBuilder builder, string keycloakAuthority, string keycloakClientId)
     {
         builder.Services.AddEndpointsApiExplorer();
@@ -97,6 +127,10 @@ public static class DiRegistration
         });
     }
 
+    /// <summary>
+    /// Registers JWT authentication for Keycloak and adds role claims from both Keycloak and the database.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
     public static void AddAuthenticationJwt(WebApplicationBuilder builder)
     {
         builder.Services.AddHttpContextAccessor();
@@ -155,6 +189,11 @@ public static class DiRegistration
         builder.Services.AddAuthorization();
     }
 
+    /// <summary>
+    /// Adds role claims from Keycloak "realm_access" into the current identity.
+    /// </summary>
+    /// <param name="identity">Identity to add roles to.</param>
+    /// <exception cref="JsonException">Thrown when the realm_access claim contains invalid JSON.</exception>
     private static void AddKeycloakRoles(ClaimsIdentity identity)
     {
         var realmAccess = identity.FindFirst("realm_access")?.Value;
@@ -169,6 +208,13 @@ public static class DiRegistration
         }
     }
 
+    /// <summary>
+    /// Registers authorization policies.
+    /// </summary>
+    /// <param name="builder">Application builder that owns the service collection.</param>
+    /// <remarks>
+    /// Adds the Administrator (REALM_ADMIN) and OwnerOnly (REALM_OWNER) policies.
+    /// </remarks>
     public static void AddAuthorization(WebApplicationBuilder builder)
     {
         builder.Services.AddAuthorization(options =>

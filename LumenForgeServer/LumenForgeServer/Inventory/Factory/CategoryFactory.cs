@@ -5,8 +5,16 @@ using NodaTime;
 
 namespace LumenForgeServer.Inventory.Factory;
 
+/// <summary>
+/// Factory methods for building category domain and view models.
+/// </summary>
 public static class CategoryFactory
 {
+    /// <summary>
+    /// Creates a <see cref="Category"/> entity from a creation payload.
+    /// </summary>
+    /// <param name="dto">Payload containing category details.</param>
+    /// <returns>A new <see cref="Category"/> entity.</returns>
     internal static Category Create(CreateCategoryDTO dto)
     {
         var now = SystemClock.Instance.GetCurrentInstant();
@@ -20,6 +28,11 @@ public static class CategoryFactory
         };
     }
 
+    /// <summary>
+    /// Builds a view model from a category entity.
+    /// </summary>
+    /// <param name="category">Category entity to transform.</param>
+    /// <returns>A <see cref="CategoryViewDto"/> containing public fields.</returns>
     internal static CategoryViewDto FromCategory(Category category)
     {
         return new CategoryViewDto

@@ -1,5 +1,11 @@
 namespace LumenForgeServer.Auth.Domain;
 
+/// <summary>
+/// Authorization roles used throughout the application.
+/// </summary>
+/// <remarks>
+/// Values are grouped by domain area and numeric range to keep role families distinct.
+/// </remarks>
 public enum Role
 {
     None = 0,
