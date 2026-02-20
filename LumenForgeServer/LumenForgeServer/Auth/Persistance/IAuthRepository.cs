@@ -2,7 +2,7 @@ using LumenForgeServer.Auth.Domain;
 
 namespace LumenForgeServer.Auth.Persistance;
 
-public interface IUserRepository
+public interface IAuthRepository
 {
     Task<long> GetUserIdByKeycloakIdAsync(string keycloakId, CancellationToken ct);
     Task AddUserAsync(User user, CancellationToken ct);

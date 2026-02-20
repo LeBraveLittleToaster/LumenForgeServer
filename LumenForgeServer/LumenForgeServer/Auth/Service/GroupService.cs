@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace LumenForgeServer.Auth.Service;
 
 
-public class UserService(IAuthRepository authRepository) : ControllerBase
+public class GroupService(IAuthRepository authRepository) : ControllerBase
 {
 
-    public async Task<User?> GetUserByKeycloakId(string keycloakId, CancellationToken ct)
+    public async Task<long> GetGroupByGuid(Guid guid, CancellationToken ct)
     {
-        var user = await authRepository.TryGetUserByKeycloakIdAsync(keycloakId, ct);
-        return user ?? throw new NotFoundException($"User with Keycloak ID {keycloakId} not found.");
+        var groupId = await authRepository.GetGroupIdByGuidAsync(guid, ct);
+        return groupId;
     }
 
     public async Task<User?> AddUser(AddUserDto addUserDto, CancellationToken ct)

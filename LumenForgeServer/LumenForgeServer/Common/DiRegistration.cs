@@ -35,7 +35,7 @@ public static class DiRegistration
     public static void RegisterRepositories(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-        builder.Services.AddScoped<IUserRepository, UserRepository>();
+        builder.Services.AddScoped<IAuthRepository, AuthRepository>();
     }
 
     public static void RegisterServices(WebApplicationBuilder builder)

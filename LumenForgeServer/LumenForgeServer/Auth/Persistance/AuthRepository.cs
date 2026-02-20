@@ -6,7 +6,7 @@ using NodaTime;
 
 namespace LumenForgeServer.Auth.Persistance;
 
-public sealed class UserRepository(AppDbContext _db) : IUserRepository
+public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     
 {
     

@@ -26,5 +26,13 @@ public class CreateUserTest(AuthFixture fixture)
         });
 
         resp.StatusCode.Should().Be(HttpStatusCode.Created);
+        
+        resp = await _fixture.ApiClient.PostAsJsonAsync("/api/v1/user/add", new AddUserDto
+        {
+            keycloakId = myKeycloakId
+        });
+
+        resp.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
+    
 }
