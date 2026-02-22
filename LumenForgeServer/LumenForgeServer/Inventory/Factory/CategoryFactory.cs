@@ -22,7 +22,7 @@ public static class CategoryFactory
         {
             CreatedAt = now,
             UpdatedAt = now,
-            Guid = Guid.NewGuid(),
+            Guid = Guid.CreateVersion7(),
             Name = dto.Name,
             Description = dto.Description,
         };
@@ -32,10 +32,10 @@ public static class CategoryFactory
     /// Builds a view model from a category entity.
     /// </summary>
     /// <param name="category">Category entity to transform.</param>
-    /// <returns>A <see cref="CategoryViewDto"/> containing public fields.</returns>
-    internal static CategoryViewDto FromCategory(Category category)
+    /// <returns>A <see cref="CategoryViews"/> containing public fields.</returns>
+    internal static CategoryViews FromCategory(Category category)
     {
-        return new CategoryViewDto
+        return new CategoryViews
         {
             Guid = category.Guid,
             Name = category.Name,

@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using NodaTime;
 
 namespace LumenForgeServer.Common;
 
@@ -59,6 +60,7 @@ public static class DiRegistration
     /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterServices(WebApplicationBuilder builder)
     {
+        builder.Services.AddScoped<GroupService>();
         builder.Services.AddScoped<InventoryService>();
         builder.Services.AddScoped<UserService>();
     }

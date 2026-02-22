@@ -411,6 +411,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(256).IsRequired();
             e.HasIndex(x => x.Guid).IsUnique();
+            
             e.HasIndex(x => x.Name).IsUnique();
         });
 
@@ -436,7 +437,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.HasKey(x => x.Id);
             e.Property(x => x.SerialNumber).HasMaxLength(256).IsRequired();
-            e.HasIndex(x => x.Uuid).IsUnique();
+            e.HasIndex(x => x.Guid).IsUnique();
             e.HasIndex(x => x.SerialNumber).IsUnique();
 
             e.Property(x => x.DeviceName).HasMaxLength(512);

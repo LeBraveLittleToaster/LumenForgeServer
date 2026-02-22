@@ -87,7 +87,7 @@ namespace LumenForgeServer.Inventory.Controller
         /// </exception>
         [Produces("application/json")]
         [HttpPost("CreateCategory")]
-        public async Task<ActionResult<CategoryViewDto>> CreateCategory(CreateCategoryDTO dto, CancellationToken ct)
+        public async Task<ActionResult<CategoryViews>> CreateCategory(CreateCategoryDTO dto, CancellationToken ct)
         {
             if (!CategoryValidator.ValidateCreateCategoryDto(dto))
             {

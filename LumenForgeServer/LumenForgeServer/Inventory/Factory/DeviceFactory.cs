@@ -24,6 +24,7 @@ public static class DeviceFactory
             DeviceDescription = dto.Description,
             VendorId = vendorId,
             PurchaseDate = dto.PurchaseDate,
+            Guid = Guid.CreateVersion7(),
             Stock = new Stock
             {
                 StockCount = dto.Stock.StockCount,

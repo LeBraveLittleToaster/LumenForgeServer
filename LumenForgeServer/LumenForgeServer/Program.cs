@@ -1,13 +1,15 @@
 using LumenForgeServer.Common;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using LumenForgeServer.Common.Database;
-
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var keycloakAuthority = builder.Configuration["Keycloak:Authority"]!;
 var keycloakClientId = builder.Configuration["Keycloak:ClientId"]!;
+
+
+
 
 DiRegistration.RegisterMemoryCache(builder);
 DiRegistration.AddAuthenticationJwt(builder);
@@ -18,7 +20,10 @@ DiRegistration.RegisterSwagger(builder, keycloakAuthority, keycloakClientId);
 
 DiRegistration.RegisterExceptionHandler(builder);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+});
 
 builder.Services.AddOpenApi();
 

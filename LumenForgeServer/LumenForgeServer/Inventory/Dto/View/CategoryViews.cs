@@ -1,9 +1,12 @@
+using LumenForgeServer.Common.Database;
+using LumenForgeServer.Inventory.Domain;
+
 namespace LumenForgeServer.Inventory.Dto.View;
 
 /// <summary>
 /// Read-only view model for presenting category data.
 /// </summary>
-public record CategoryViewDto
+public record CategoryViews
 {
     /// <summary>
     /// Category UUID.

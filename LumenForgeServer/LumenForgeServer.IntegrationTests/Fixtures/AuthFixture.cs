@@ -16,7 +16,6 @@ public sealed class AuthFixture : IAsyncLifetime
 
     public AuthFixture()
     {
-        // Configure
         _options = new KeycloakOptions
         {
             BaseUrl  = Environment.GetEnvironmentVariable("KC_BASEURL")  ?? "http://localhost:8080",

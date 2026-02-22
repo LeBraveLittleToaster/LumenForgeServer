@@ -1,5 +1,6 @@
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Auth.Factory;
 using LumenForgeServer.Auth.Persistance;
 using LumenForgeServer.Auth.Validator;
@@ -21,10 +22,12 @@ public class UserService(IAuthRepository authRepository) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The user if found.</returns>
     /// <exception cref="NotFoundException">Thrown when the user cannot be found.</exception>
-    public async Task<User?> GetUserByKeycloakId(string keycloakId, CancellationToken ct)
+    public async Task<UserView?> GetUserByKeycloakId(string keycloakId, CancellationToken ct)
     {
         var user = await authRepository.TryGetUserByKeycloakIdAsync(keycloakId, ct);
-        return user ?? throw new NotFoundException($"User with Keycloak ID {keycloakId} not found.");
+        return user == null 
+            ? throw new NotFoundException($"User with Keycloak ID {keycloakId} not found.")
+            : UserView.FromEntity(user);
     }
 
     /// <summary>

@@ -104,6 +104,23 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     }
     
     /// <summary>
+    /// Resolves the group for a group guid.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The group object.</returns>
+    /// <exception cref="NotFoundException">Thrown when the group cannot be found.</exception>
+    public async Task<Group?> GetGroupByGuidAsync(Guid groupGuid, CancellationToken ct)
+    {
+        var group = await _db.Groups
+            .Where(g => g.Guid == groupGuid)
+            .SingleOrDefaultAsync(ct);
+
+        return group 
+               ?? throw new NotFoundException($"Group {group} not found");
+    }
+    
+    /// <summary>
     /// Resolves the internal user id for a Keycloak subject identifier.
     /// </summary>
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
@@ -127,9 +144,9 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="group">Group entity to persist.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
-    public Task AddGroupAsync(Group group, CancellationToken ct)
+    public async Task AddGroupAsync(Group group, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await _db.Groups.AddAsync(group, ct).AsTask();
     }
 
     /// <summary>

@@ -46,4 +46,55 @@ public static class GroupRequestValidator
                 errors);
         }
     }
+
+    public static void ValidateAddGroup(AddGroupDto dto)
+    {
+        var errors = new Dictionary<string, string[]>();
+        
+        if (string.IsNullOrWhiteSpace(dto.Name))
+        {
+            errors.Add("name", ["Length must be greater than 0"]);
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.Description) ||
+            dto.Description.Length < 10)
+        {
+            errors.Add("description", ["Must be more than 10 characters"]);
+        }
+
+        if (errors.Count > 0)
+        {
+            throw new ValidationException(
+                "Failed to validate Add Group Dto",
+                errors);
+        }
+        
+    }
+
+    public static void ValidateGetGroup(string groupGuidStr, out Guid groupGuid)
+    {
+        var errors = new Dictionary<string, string[]>();
+        groupGuid = Guid.Empty;
+        
+        if (string.IsNullOrWhiteSpace(groupGuidStr))
+        {
+            errors.Add("groupGuidStr", ["Length must be greater than 0"]);
+        }
+
+        try
+        {
+            groupGuid = Guid.Parse(groupGuidStr);
+        }
+        catch (Exception e)
+        {
+            errors.Add("groupGuid", ["Must be a valid non-empty GUID"]);
+        }
+        
+        if (errors.Count > 0)
+        {
+            throw new ValidationException(
+                "Failed to validate Get Group",
+                errors);
+        }
+    }
 }

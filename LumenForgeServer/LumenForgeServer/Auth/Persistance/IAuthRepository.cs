@@ -47,6 +47,17 @@ public interface IAuthRepository
     /// <returns>Distinct roles assigned to the user.</returns>
     Task<HashSet<Role>> GetRolesForKcIdAsync(string keycloakId, CancellationToken ct);
     
+    
+    /// <summary>
+    /// Resolves the group for a group guid.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The group object.</returns>
+    /// <exception cref="LumenForgeServer.Common.Exceptions.NotFoundException">
+    /// Thrown when the group cannot be found.
+    /// </exception>
+    Task<Group?> GetGroupByGuidAsync(Guid groupGuid, CancellationToken ct);
     /// <summary>
     /// Resolves the internal group id for a group guid.
     /// </summary>

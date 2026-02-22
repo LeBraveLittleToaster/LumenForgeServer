@@ -18,25 +18,49 @@ namespace LumenForgeServer.Auth.Controller;
 public class GroupController(GroupService groupService) : ControllerBase
 {
     /// <summary>
-    /// Creates a new group.
+    /// Retrieves a group by groupGuid.
     /// </summary>
-    /// <param name="groupGuid">GroupGuid as string. Identifies the group the user should be assigned to.</param>
-    /// <param name="addGroupDto">Payload containing group name and description.</param>
+    /// <param name="groupGuid">Stable group Guid</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <returns>A 201 response with the created group payload.</returns>
-    /// <exception cref="NotImplementedException">Thrown because this endpoint is not implemented.</exception>
-    [HttpPut("{groupGuid}/users")]
+    /// <returns>A 200 response with the group view payload.</returns>
+    /// <exception cref="LumenForgeServer.Common.Exceptions.NotFoundException">
+    /// Thrown when the group cannot be found.
+    /// </exception>
+    [HttpGet("{groupGuid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetGroup(string groupGuid, CancellationToken ct)
+    {
+        GroupRequestValidator.ValidateGetGroup(groupGuid, out var parsedGroupGuid);
+        
+        var groupView = await groupService.GetGroupByGuid(parsedGroupGuid, ct);
+        return new JsonResult(groupView);
+    }
+    
+    /// <summary>
+    /// Creates a group record.
+    /// </summary>
+    /// <param name="addUserDto">Payload containing the Keycloak subject identifier.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 201 response with the created user payload.</returns>
+    /// <exception cref="LumenForgeServer.Common.Exceptions.ValidationException">
+    /// Thrown when the payload fails validation.
+    /// </exception>
+    [HttpPut("add")]
     [Authorize(Roles = "REALM_ADMIN")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Produces("application/json")]
     
-    public async Task<IActionResult> AssignUserToGroup(string groupGuid, [FromBody] AssignUserToGroupDto addGroupDto, CancellationToken ct)
+    public async Task<IActionResult> AddGroup([FromBody] AddGroupDto dto, CancellationToken ct)
     {
-        GroupRequestValidator.ValidateAssignUserToGroupRequest(groupGuid, addGroupDto, out var parsedGroupGuid);
+        GroupRequestValidator.ValidateAddGroup(dto);
+
+        var group = await groupService.AddGroup(dto, ct);
         
-        await groupService.AssignUserToGroup(addGroupDto.assigneeKcId, addGroupDto.userKcId, parsedGroupGuid, ct);
-        return NoContent();
+        return CreatedAtAction(nameof(AddGroup), new { userKcId = group }, group);
     }
 }

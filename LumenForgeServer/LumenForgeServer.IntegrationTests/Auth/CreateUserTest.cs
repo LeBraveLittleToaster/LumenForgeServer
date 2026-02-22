@@ -1,62 +1,50 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using FluentAssertions;
 using LumenForgeServer.Auth.Dto;
-using LumenForgeServer.Common.Database;
+using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
-using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
 [Collection(AuthCollection.Name)]
-public class CreateUserTest : IAsyncLifetime
+public class CreateUserTest(AuthFixture fixture)
 {
-    private readonly AuthFixture _fixture;
-    private readonly AppDbContext _dbContext;
-
-    public CreateUserTest(AuthFixture fixture, AppDbFixture dbFixture)
-    {
-        _fixture = fixture;
-        _dbContext = dbFixture.CreateDbContext();
-    }
-
-
     [Fact]
     public async Task POST_new_user_creates_user()
     {
-        var myKeycloakId = _fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
-        
-        var respDelete = await _fixture.ApiClient.DeleteAsync($"/api/v1/auth/users/{myKeycloakId}");
-        
+        var myKeycloakId = fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
+
+        var respDelete = await fixture.ApiClient.DeleteAsync($"/api/v1/auth/users/{myKeycloakId}");
+
         respDelete.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
-        
-        var respPut1 = await _fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
+
+        var respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
         {
             userKcId = myKeycloakId
         });
 
-        respPut1.StatusCode.Should().Be(HttpStatusCode.Created);
+        respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var userFromDb = await _fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
+        var userFromDb = await fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
         userFromDb.StatusCode.Should().Be(HttpStatusCode.OK);
         userFromDb.Content.Should().NotBeNull();
-        
-        var respPut2 = await _fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
+
+        var respPutTheSameClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
         {
             userKcId = myKeycloakId
         });
 
-        respPut2.StatusCode.Should().Be(HttpStatusCode.Conflict);
-    }
+        respPutTheSameClient.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-    public async Task InitializeAsync()
-    { 
-        
-    }
+        var getClient = await fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
+        getClient.StatusCode.Should().Be(HttpStatusCode.OK);
+        getClient.Content.Should().NotBeNull();
+        var contentStr = await getClient.Content.ReadAsStringAsync();
 
-    public Task DisposeAsync()
-    {
-        return Task.CompletedTask;
+        var user = JsonSerializer.Deserialize<UserView>(contentStr);
+        user.Should().NotBeNull();
     }
 }

@@ -14,7 +14,7 @@ public class Device
     /// <summary>
     /// External identifier used for API interactions.
     /// </summary>
-    public Guid Uuid { get; set; }
+    public Guid Guid { get; set; }
     /// <summary>
     /// Device serial number, expected to be unique.
     /// </summary>

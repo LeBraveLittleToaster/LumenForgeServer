@@ -1,4 +1,5 @@
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Auth.Service;
 using LumenForgeServer.Auth.Validator;
 using Microsoft.AspNetCore.Authorization;
@@ -61,8 +62,8 @@ public class UserController(UserService userService) : ControllerBase
     {
         UserRequestValidator.ValidateGetUser();
         
-        var user = await userService.GetUserByKeycloakId(userKcId, ct);
-        return new JsonResult(user);
+        var userView = await userService.GetUserByKeycloakId(userKcId, ct);
+        return new JsonResult(userView);
     }
     
     /// <summary>

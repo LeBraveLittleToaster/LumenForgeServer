@@ -45,7 +45,7 @@ public class InventoryService(IInventoryRepository repository)
         }
         catch (DbUpdateException ex)
         {
-            throw new ConflictException("A unique constraint was violated.", ex);
+            throw new UniqueConstraintException("A unique constraint was violated.", ex);
         }
 
         return device;
