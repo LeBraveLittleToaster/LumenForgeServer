@@ -5,6 +5,7 @@ using LumenForgeServer.Auth.Persistance;
 using LumenForgeServer.Auth.Validator;
 using LumenForgeServer.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LumenForgeServer.Auth.Service;
 
@@ -13,7 +14,6 @@ namespace LumenForgeServer.Auth.Service;
 /// </summary>
 public class UserService(IAuthRepository authRepository) : ControllerBase
 {
-
     /// <summary>
     /// Retrieves a user by Keycloak subject identifier.
     /// </summary>
@@ -38,10 +38,17 @@ public class UserService(IAuthRepository authRepository) : ControllerBase
     public async Task<User?> AddUser(string userKcId, CancellationToken ct)
     {
         var user = UserFactory.BuildUser(userKcId);
-        
-        await authRepository.AddUserAsync(user, ct);
-        await authRepository.SaveChangesAsync(ct);
-        
+
+        try
+        {
+            await authRepository.AddUserAsync(user, ct);
+            await authRepository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException e)
+        {
+            throw new UniqueConstraintException(e.Message, e);
+        }
+
         return user;
     }
 
@@ -57,7 +64,7 @@ public class UserService(IAuthRepository authRepository) : ControllerBase
         await authRepository.DeleteUserByKcIdAsync(userKcId, ct);
         await authRepository.SaveChangesAsync(ct);
     }
-    
+
     /// <summary>
     /// Retrieves all roles assigned to a user via group memberships.
     /// </summary>
@@ -66,6 +73,6 @@ public class UserService(IAuthRepository authRepository) : ControllerBase
     /// <returns>Distinct roles assigned to the user.</returns>
     public async Task<HashSet<Role>> GetRolesForKcId(string keycloakId, CancellationToken ct)
     {
-        return await authRepository.GetRolesForKcIdAsync(keycloakId,ct);
+        return await authRepository.GetRolesForKcIdAsync(keycloakId, ct);
     }
 }
