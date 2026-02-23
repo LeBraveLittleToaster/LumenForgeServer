@@ -4,8 +4,11 @@ using System.Text.Json;
 using FluentAssertions;
 using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Dto.Views;
+using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
@@ -43,8 +46,8 @@ public class CreateUserTest(AuthFixture fixture)
         getClient.StatusCode.Should().Be(HttpStatusCode.OK);
         getClient.Content.Should().NotBeNull();
         var contentStr = await getClient.Content.ReadAsStringAsync();
-
-        var user = JsonSerializer.Deserialize<UserView>(contentStr);
+        
+        var user = JsonSerializer.Deserialize<UserView>(contentStr, Json.GetJsonSerializerOptions());
         user.Should().NotBeNull();
     }
 }
