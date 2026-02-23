@@ -15,14 +15,24 @@ public class CreateGroupTest(AuthFixture fixture)
     {
         var myKeycloakId = fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
 
-
+        var guid = Guid.NewGuid();
+        var groupName = "My Test Name" + guid;
+        var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
         var respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/groups/add", new AddGroupDto()
         {
-            Name = "My Test Name" + Guid.NewGuid(),
-            Description = "My Test Description,My Test Description,My Test Description" + Guid.NewGuid(),
+            Name = groupName,
+            Description = groupDesc,
         });
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
+        
+        respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/groups/add", new AddGroupDto()
+        {
+            Name = groupName,
+            Description = groupDesc,
+        });
+
+        respPutClient.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
 }

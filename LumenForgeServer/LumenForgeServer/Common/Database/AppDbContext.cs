@@ -531,6 +531,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.Guid).IsUnique();
+            e.HasIndex(x => x.Name).IsUnique();
             
             e.HasMany(x => x.GroupRoles)
                 .WithOne(x => x.Group)
