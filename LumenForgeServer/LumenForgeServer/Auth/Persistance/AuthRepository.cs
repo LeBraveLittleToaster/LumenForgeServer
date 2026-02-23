@@ -157,7 +157,10 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task DeleteGroupByGuidAsync(Guid guid, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var groupsRange = _db.Groups
+            .Where(g => g.Guid == guid);
+        _db.Groups.RemoveRange(groupsRange);
+        return Task.CompletedTask;
     }
 
     /// <summary>

@@ -1,4 +1,3 @@
-using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Common.Exceptions;
 
@@ -96,5 +95,28 @@ public static class GroupRequestValidator
                 "Failed to validate Get Group",
                 errors);
         }
+    }
+
+    public static void ValidateDeleteGroup(string groupGuidStr, out Guid groupGuid)
+    {
+        var errors = new Dictionary<string, string[]>();
+        groupGuid = Guid.Empty;
+        if (string.IsNullOrWhiteSpace(groupGuidStr))
+        {
+            errors.Add("groupGuidStr", ["Must be a valid non-empty GUID"]);
+            throw new ValidationException(
+                "Failed to validate Delete Group", errors);
+        }
+        try
+        {
+            groupGuid = Guid.Parse(groupGuidStr);
+        }
+        catch (Exception e)
+        {
+            errors.Add("groupGuid", ["Must be a valid non-empty GUID"]);
+            throw new ValidationException(
+                "Failed to validate Group Guid str",errors);
+        }
+    
     }
 }

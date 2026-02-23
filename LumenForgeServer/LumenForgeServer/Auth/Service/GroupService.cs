@@ -67,4 +67,30 @@ public class GroupService(IAuthRepository authRepository)
         
         return GroupView.FromEntity(group);
     }
+
+    public async Task DeleteGroupByGuid(Guid parsedGroupGuid, CancellationToken ct)
+    {
+        try
+        {
+            await authRepository.DeleteGroupByGuidAsync(parsedGroupGuid, ct);
+            await authRepository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException e)
+        {
+            throw new NotFoundException(e.Message);
+        }
+    }
+
+    public async Task AssignUserToGroup(string? assigneeKcId, string userKcId, Guid groupGuid,  CancellationToken ct)
+    {
+        try
+        {
+            await authRepository.AssignUserToGroupAsync(assigneeKcId, userKcId, groupGuid, ct);
+            await authRepository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException e)
+        {
+            throw new UniqueConstraintException(e.Message, e);
+        }
+    }
 }
