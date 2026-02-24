@@ -1,12 +1,10 @@
 using System.Text.Json;
 using LumenForgeServer.IntegrationTests.Utils;
 
-public sealed class KeycloakTestClient
+namespace LumenForgeServer.IntegrationTests.Client;
+
+public sealed class KeycloakTestClient(HttpClient http)
 {
-    private readonly HttpClient _http;
-
-    public KeycloakTestClient(HttpClient http) => _http = http;
-
     public async Task<string> GetAccessTokenPasswordGrantAsync(
         KeycloakOptions o,
         CancellationToken ct = default)
@@ -24,7 +22,7 @@ public sealed class KeycloakTestClient
         if (!string.IsNullOrWhiteSpace(o.ClientSecret))
             fields["client_secret"] = o.ClientSecret;
 
-        using var res = await _http.PostAsync(tokenUrl, new FormUrlEncodedContent(fields), ct);
+        using var res = await http.PostAsync(tokenUrl, new FormUrlEncodedContent(fields), ct);
         var body = await res.Content.ReadAsStringAsync(ct);
 
         if (!res.IsSuccessStatusCode)

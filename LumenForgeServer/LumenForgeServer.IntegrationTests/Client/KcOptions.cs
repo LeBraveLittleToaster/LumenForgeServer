@@ -11,6 +11,8 @@ public class KcOptions
     public KeycloakOptions KeycloakOptions { get; init; }
     public string AdminPass { get; init; }
     public string AdminUser { get; init; }
+    
+    public string AdminRealm { get; init; }
 
     private KcOptions() { }
 
@@ -26,8 +28,9 @@ public class KcOptions
                 Username = Environment.GetEnvironmentVariable("KC_USER") ?? "alice",
                 Password = Environment.GetEnvironmentVariable("KC_PASS") ?? "alice123",
             },
+            AdminRealm = Environment.GetEnvironmentVariable("KC_ADMIN_REALM") ?? "master",
             AdminUser = Environment.GetEnvironmentVariable("KC_ADMIN_USER") ?? "admin",
-            AdminPass = Environment.GetEnvironmentVariable("KC_ADMIN_PASS") ?? "adminPassword"
+            AdminPass = Environment.GetEnvironmentVariable("KC_ADMIN_PASS") ?? "adminpassword"
         };        
     }
 }
