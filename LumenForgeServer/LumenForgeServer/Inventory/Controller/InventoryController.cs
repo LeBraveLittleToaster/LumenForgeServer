@@ -4,7 +4,6 @@ using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.View;
 using LumenForgeServer.Inventory.Factory;
 using LumenForgeServer.Inventory.Service;
-using LumenForgeServer.Inventory.Validator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -45,8 +44,8 @@ namespace LumenForgeServer.Inventory.Controller
         /// This endpoint currently returns a hard-coded category and ignores the device guid.
         /// </remarks>
         [Authorize(Policy =AuthConstants.POLICY_ADMIN_ONLY)]
-        [HttpGet("{deviceGuid}")]
-        public ActionResult GetCategories(string deviceGuid, CancellationToken ct)
+        [HttpGet("{deviceGuid:guid}")]
+        public ActionResult GetCategories([FromRoute] Guid deviceGuid, CancellationToken ct)
         {
             var cat = new Category
             {
@@ -89,11 +88,6 @@ namespace LumenForgeServer.Inventory.Controller
         [HttpPost("CreateCategory")]
         public async Task<ActionResult<CategoryViews>> CreateCategory(CreateCategoryDTO dto, CancellationToken ct)
         {
-            if (!CategoryValidator.ValidateCreateCategoryDto(dto))
-            {
-                return BadRequest("Invalid Input data, name not between 1 and 100 characters");
-            }
-
             _logger.LogInformation($"Creating category {dto.Name}");
             var category = await _inventoryService.AddCategory(dto, ct);
             return new JsonResult(CategoryFactory.FromCategory(category));

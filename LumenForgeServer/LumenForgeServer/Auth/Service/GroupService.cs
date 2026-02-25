@@ -3,7 +3,6 @@ using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Auth.Factory;
 using LumenForgeServer.Auth.Persistance;
-using LumenForgeServer.Auth.Validator;
 using LumenForgeServer.Common.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

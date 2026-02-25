@@ -8,6 +8,5 @@ public class AssignUsersToGroupTests
     public async Task AssignUsersToGroup()
     {
         
-        
     }
 }

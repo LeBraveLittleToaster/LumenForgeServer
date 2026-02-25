@@ -1,6 +1,5 @@
 using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Service;
-using LumenForgeServer.Auth.Validator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,16 +25,14 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <exception cref="LumenForgeServer.Common.Exceptions.NotFoundException">
     /// Thrown when the group cannot be found.
     /// </exception>
-    [HttpGet("{groupGuid}")]
+    [HttpGet("{groupGuid:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Produces("application/json")]
-    public async Task<IActionResult> GetGroup(string groupGuid, CancellationToken ct)
+    public async Task<IActionResult> GetGroup([FromRoute] Guid groupGuid, CancellationToken ct)
     {
-        GroupRequestValidator.ValidateGetGroup(groupGuid, out var parsedGroupGuid);
-
-        var groupView = await groupService.GetGroupByGuid(parsedGroupGuid, ct);
+        var groupView = await groupService.GetGroupByGuid(groupGuid, ct);
         return new JsonResult(groupView);
     }
 
@@ -45,9 +42,6 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="addUserDto">Payload containing the Keycloak subject identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 201 response with the created user payload.</returns>
-    /// <exception cref="LumenForgeServer.Common.Exceptions.ValidationException">
-    /// Thrown when the payload fails validation.
-    /// </exception>
     [HttpPut("")]
     [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -57,8 +51,6 @@ public class GroupController(GroupService groupService) : ControllerBase
 
     public async Task<IActionResult> AddGroup([FromBody] AddGroupDto dto, CancellationToken ct)
     {
-        GroupRequestValidator.ValidateAddGroup(dto);
-
         var group = await groupService.AddGroup(dto, ct);
 
         return CreatedAtAction(nameof(AddGroup), new { groupGuid = group }, group);
@@ -70,21 +62,16 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="groupGuid">Path var containing the group Guid.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 204 response with when deleted succesfully.</returns>
-    /// <exception cref="LumenForgeServer.Common.Exceptions.ValidationException">
-    /// Thrown when the payload fails validation.
-    /// </exception>
-    [HttpDelete("{groupGuid}")]
+    [HttpDelete("{groupGuid:guid}")]
     [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
 
-    public async Task<IActionResult> DeleteGroup(string groupGuid, CancellationToken ct)
+    public async Task<IActionResult> DeleteGroup([FromRoute] Guid groupGuid, CancellationToken ct)
     {
-        GroupRequestValidator.ValidateDeleteGroup(groupGuid, out var parsedGroupGuid);
-
-        await groupService.DeleteGroupByGuid(parsedGroupGuid, ct);
+        await groupService.DeleteGroupByGuid(groupGuid, ct);
 
         return NoContent();
     }
@@ -95,20 +82,15 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="groupGuid">Group Guid the user is assigned to</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with when assigned successfully.</returns>
-    /// <exception cref="LumenForgeServer.Common.Exceptions.ValidationException">
-    /// Thrown when the payload fails validation.
-    /// </exception>
-    [HttpPut("{groupGuid}/users")]
+    [HttpPut("{groupGuid:guid}/users")]
     [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
-    public async Task<IActionResult> AssignUserToGroup([FromBody] AssignUserToGroupDto dto, [FromRoute] string groupGuid, CancellationToken ct)
+    public async Task<IActionResult> AssignUserToGroup([FromBody] AssignUserToGroupDto dto, [FromRoute] Guid groupGuid, CancellationToken ct)
     {
-        GroupRequestValidator.ValidateAssignUserToGroupRequest(groupGuid, dto,  out var parsedGroupGuid);
-
-        await groupService.AssignUserToGroup(dto.assigneeKcId, dto.userKcId, parsedGroupGuid, ct);
+        await groupService.AssignUserToGroup(dto.assigneeKcId, dto.userKcId, groupGuid, ct);
         
         return Ok();
     }

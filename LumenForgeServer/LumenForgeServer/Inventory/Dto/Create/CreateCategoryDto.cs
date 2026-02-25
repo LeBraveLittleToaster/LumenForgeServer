@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LumenForgeServer.Inventory.Dto.Create;
 
 /// <summary>
@@ -8,6 +10,8 @@ public record CreateCategoryDTO
     /// <summary>
     /// Category name.
     /// </summary>
+    [Required]
+    [StringLength(100, MinimumLength = 1)]
     public string Name { get; set; } = null!;
     /// <summary>
     /// Optional category description.

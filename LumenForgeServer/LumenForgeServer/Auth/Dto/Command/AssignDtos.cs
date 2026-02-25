@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace LumenForgeServer.Auth.Dto;
 
 /// <summary>
@@ -12,5 +14,8 @@ public record AssignUserToGroupDto
     /// <summary>
     /// Keycloak subject identifier for the user being assigned.
     /// </summary>
+    [Required]
+    [MinLength(1)]
+    [RegularExpression(@".*\S.*")]
     public required string userKcId   { get; init; }
 }

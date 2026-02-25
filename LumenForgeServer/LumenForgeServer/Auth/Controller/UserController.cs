@@ -1,10 +1,8 @@
 using LumenForgeServer.Auth.Dto;
-using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Auth.Service;
-using LumenForgeServer.Auth.Validator;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace LumenForgeServer.Auth.Controller;
 
@@ -25,9 +23,6 @@ public class UserController(UserService userService) : ControllerBase
     /// <param name="addUserDto">Payload containing the Keycloak subject identifier.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 201 response with the created user payload.</returns>
-    /// <exception cref="LumenForgeServer.Common.Exceptions.ValidationException">
-    /// Thrown when the payload fails validation.
-    /// </exception>
     [HttpPut("")]
     [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -37,8 +32,6 @@ public class UserController(UserService userService) : ControllerBase
     
     public async Task<IActionResult> AddUser([FromBody] AddUserDto addUserDto, CancellationToken ct)
     {
-        UserRequestValidator.ValidateAddUser(addUserDto);
-        
         var user = await userService.AddUser(addUserDto.userKcId, ct);
         
         return CreatedAtAction(nameof(GetUser), new { userKcId = user?.UserKcId }, user);
@@ -58,10 +51,11 @@ public class UserController(UserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Produces("application/json")]
-    public async Task<IActionResult> GetUser(string userKcId, CancellationToken ct)
+    public async Task<IActionResult> GetUser(
+        [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
+        string userKcId,
+        CancellationToken ct)
     {
-        UserRequestValidator.ValidateGetUser();
-        
         var userView = await userService.GetUserByKeycloakId(userKcId, ct);
         return new JsonResult(userView);
     }
@@ -79,10 +73,11 @@ public class UserController(UserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
-    public async Task<IActionResult> DeleteUserByKcId(string userKcId, CancellationToken ct)
+    public async Task<IActionResult> DeleteUserByKcId(
+        [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
+        string userKcId,
+        CancellationToken ct)
     {
-        UserRequestValidator.ValidateDeleteUserByKcId();
-        
         await userService.DeleteUserByKcId(userKcId, ct);
         return Ok();
     }
@@ -97,10 +92,11 @@ public class UserController(UserService userService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
-    public async Task<IActionResult> GetUserRoles(string keycloakId, CancellationToken ct)
+    public async Task<IActionResult> GetUserRoles(
+        [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
+        string keycloakId,
+        CancellationToken ct)
     {
-        UserRequestValidator.ValidateGetUserRoles();
-        
         var roles = await userService.GetRolesForKcId(keycloakId, ct);
         return Ok(roles);
     }
