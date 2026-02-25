@@ -7,8 +7,7 @@ using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
-using NodaTime;
-using NodaTime.Serialization.SystemTextJson;
+using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
@@ -18,31 +17,31 @@ public class CreateUserTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_user_creates_user()
     {
-        var myKeycloakId = fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
+        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
 
-        var respDelete = await fixture.ApiClient.DeleteAsync($"/api/v1/auth/users/{myKeycloakId}");
+        var respDelete = await kcClient.AppApiClient.DeleteAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
 
         respDelete.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
 
-        var respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
+        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
         {
-            userKcId = myKeycloakId
+            userKcId = kcClient.KcUserId
         });
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var userFromDb = await fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
+        var userFromDb = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
         userFromDb.StatusCode.Should().Be(HttpStatusCode.OK);
         userFromDb.Content.Should().NotBeNull();
 
-        var respPutTheSameClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/users/add", new AddUserDto
+        var respPutTheSameClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
         {
-            userKcId = myKeycloakId
+            userKcId = kcClient.KcUserId
         });
 
         respPutTheSameClient.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var getClient = await fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
+        var getClient = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
         getClient.StatusCode.Should().Be(HttpStatusCode.OK);
         getClient.Content.Should().NotBeNull();
         var contentStr = await getClient.Content.ReadAsStringAsync();

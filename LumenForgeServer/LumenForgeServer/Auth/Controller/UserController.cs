@@ -28,7 +28,7 @@ public class UserController(UserService userService) : ControllerBase
     /// <exception cref="LumenForgeServer.Common.Exceptions.ValidationException">
     /// Thrown when the payload fails validation.
     /// </exception>
-    [HttpPut("add")]
+    [HttpPut("")]
     [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

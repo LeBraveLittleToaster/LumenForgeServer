@@ -1,37 +1,37 @@
-﻿using LumenForgeServer.IntegrationTests.Utils;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LumenForgeServer.IntegrationTests.Client;
+﻿namespace LumenForgeServer.IntegrationTests.Client;
 
 public class KcOptions
 {
+    public string KcAdminPass { get; init; }
+    public string KcAdminUser { get; init; }
 
-    public KeycloakOptions KeycloakOptions { get; init; }
-    public string AdminPass { get; init; }
-    public string AdminUser { get; init; }
+    public string KcAdminRealm { get; init; }
+
+    public string KcClientId { get; init; }
+
+    public string KcRealm { get; init; }
     
-    public string AdminRealm { get; init; }
+    public string KcBaseUrl { get; init; }
+    
+    public string AppBaseUrl { get; init; }
 
-    private KcOptions() { }
+    private KcOptions()
+    {
+    }
 
     public static KcOptions FromEnvironment()
     {
         return new KcOptions
         {
-            KeycloakOptions = new KeycloakOptions
-            {
-                BaseUrl = Environment.GetEnvironmentVariable("KC_BASEURL") ?? "http://localhost:8080",
-                Realm = Environment.GetEnvironmentVariable("KC_REALM") ?? "lumenforge-realm",
-                ClientId = Environment.GetEnvironmentVariable("KC_CLIENTID") ?? "lumenforge-test",
-                Username = Environment.GetEnvironmentVariable("KC_USER") ?? "alice",
-                Password = Environment.GetEnvironmentVariable("KC_PASS") ?? "alice123",
-            },
-            AdminRealm = Environment.GetEnvironmentVariable("KC_ADMIN_REALM") ?? "master",
-            AdminUser = Environment.GetEnvironmentVariable("KC_ADMIN_USER") ?? "admin",
-            AdminPass = Environment.GetEnvironmentVariable("KC_ADMIN_PASS") ?? "adminpassword"
-        };        
+            AppBaseUrl = Environment.GetEnvironmentVariable("APP_BASEURL") ?? "https://localhost:7217",
+            
+            KcBaseUrl = Environment.GetEnvironmentVariable("KC_BASEURL") ?? "http://localhost:8080",
+            KcRealm = Environment.GetEnvironmentVariable("KC_REALM") ?? "lumenforge-realm",
+            KcClientId = Environment.GetEnvironmentVariable("KC_CLIENTID") ?? "lumenforge-test",
+            
+            KcAdminRealm = Environment.GetEnvironmentVariable("KC_ADMIN_REALM") ?? "master",
+            KcAdminUser = Environment.GetEnvironmentVariable("KC_ADMIN_USER") ?? "admin",
+            KcAdminPass = Environment.GetEnvironmentVariable("KC_ADMIN_PASS") ?? "adminpassword"
+        };
     }
 }
-

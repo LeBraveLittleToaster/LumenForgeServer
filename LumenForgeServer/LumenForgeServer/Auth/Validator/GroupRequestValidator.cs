@@ -40,6 +40,7 @@ public static class GroupRequestValidator
 
         if (errors.Count > 0)
         {
+            Console.WriteLine(errors.ToString());
             throw new ValidationException(
                 "Failed to validate Assign User to Group Dto",
                 errors);

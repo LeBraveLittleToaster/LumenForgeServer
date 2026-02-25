@@ -4,69 +4,64 @@ using System.Text.Json;
 
 namespace LumenForgeServer.IntegrationTests.Client;
 
-public class KeycloakAdminClient
+public class KcAdminClient
 {
     private static HttpClient _httpClient = new();
-    private KcOptions _kcOptions;
+    private readonly KcOptions _kcOptions;
 
     private string? _adminToken = null;
-    public KeycloakAdminClient(KcOptions kcOptions)
+    public KcAdminClient(KcOptions kcOptions)
     {
         _kcOptions = kcOptions;
         _httpClient = new HttpClient();
-        _httpClient.BaseAddress = new Uri(kcOptions.KeycloakOptions.BaseUrl);
+        _httpClient.BaseAddress = new Uri(kcOptions.KcBaseUrl);
     }
 
-    public async Task<TestUserLogin> CreateKcUserAsync(string username, string password, string email, string firstName, string lastName, string[] groups, string[] realmRoles, CancellationToken ct)
+    public async Task<string?> CreateKcUserAsync(TestUserInfo testUserInfo, CancellationToken ct)
     {
         if (_adminToken == null)
         {
-            await RequestAdminToken(CancellationToken.None);
+            await RequestAdminToken(ct);
         }
         var newUser = new
         {
-            username = username,
+            username = testUserInfo.Username,
             enabled = true,
-            firstName = firstName,
-            lastName = lastName,
-            email = email,
+            firstName = testUserInfo.FirstName,
+            lastName = testUserInfo.LastName,
+            email = testUserInfo.Email,
             emailVerified = true,
-            groups = groups,
-            realmRoles = realmRoles,
+            groups = testUserInfo.Groups,
+            realmRoles = testUserInfo.RealmRoles,
             credentials = new[]
             {
-                new { type = "password", value = password, temporary = false }
+                new { type = "password", value = testUserInfo.Password, temporary = false }
             }
         };
         
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _adminToken);
         
-        var response = await _httpClient.PostAsJsonAsync($"/admin/realms/{_kcOptions.KeycloakOptions.Realm}/users", newUser);
+        var response = await _httpClient.PostAsJsonAsync($"/admin/realms/{_kcOptions.KcRealm}/users", newUser, ct);
         
         var httpStatus = (int)response.StatusCode;
 
         if (response.IsSuccessStatusCode)
         {
             Console.WriteLine($"User created successfully. Status: {httpStatus}");
-            var body = await response.Content.ReadAsStringAsync(ct);
-            var respJson = JsonSerializer.Deserialize<JsonElement>(body);
-            Console.WriteLine(respJson.GetProperty("access_token").GetString());
-            return new TestUserLogin(username, password);
+            return response.Headers.Location?.Segments[^1];
         }
-        else
-        {
-            var errorBody = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Failed. Status: {httpStatus}, Error: {errorBody}");
-            throw new Exception(errorBody);
-        }
+
+        var errorBody = await response.Content.ReadAsStringAsync(ct);
+        Console.WriteLine($"Failed. Status: {httpStatus}, Error: {errorBody}");
+        throw new Exception(errorBody);
     }
     
     private async Task<bool> RequestAdminToken(CancellationToken ct)
     {
         var data = new Dictionary<string, string>
         {
-            ["username"] = _kcOptions.AdminUser,
-            ["password"] = _kcOptions.AdminPass,
+            ["username"] = _kcOptions.KcAdminUser,
+            ["password"] = _kcOptions.KcAdminPass,
             ["grant_type"] = "password",
             ["client_id"] = "admin-cli",
         };
@@ -75,7 +70,7 @@ public class KeycloakAdminClient
 
         try
         {
-            var url = $"{_kcOptions.KeycloakOptions.BaseUrl}/realms/{_kcOptions.AdminRealm}/protocol/openid-connect/token";
+            var url = $"{_kcOptions.KcBaseUrl}/realms/{_kcOptions.KcAdminRealm}/protocol/openid-connect/token";
             var resp = await _httpClient.PostAsync(url, content);
 
             var body = await resp.Content.ReadAsStringAsync();

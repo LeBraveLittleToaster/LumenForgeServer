@@ -1,4 +1,3 @@
-using LumenForgeServer.Common.Database;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Fixtures;
 

@@ -1,10 +1,9 @@
 ﻿using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Net;
 using System.Net.Http.Json;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
-using LumenForgeServer.IntegrationTests.Utils;
+using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests;
 
@@ -17,7 +16,8 @@ public class HealthTests(AuthFixture fixture)
     [Fact]
     public async Task GET_health_returns_ok()
     {
-        var resp = await _fixture.ApiClient.GetAsync("/api/v1/health");
+        var kcClient = await fixture.CreateNewTestUserClientAsync(new TestUserInfo("tu", "pw", "t@t.de", "TV","TN", ["users"], ["REALM_ADMIN"]), CancellationToken.None);
+        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/health");
 
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -28,7 +28,8 @@ public class HealthTests(AuthFixture fixture)
     [Fact]
     public async Task GET_health2_returns_ok()
     {
-        var resp = await _fixture.ApiClient.GetAsync("/api/v1/health2");
+        var kcClient = await fixture.CreateNewTestUserClientAsync(new TestUserInfo("tu", "pw", "t@t.de", "TV","TN", ["users"], ["REALM_ADMIN"]), CancellationToken.None);
+        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/health2");
 
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -39,7 +40,8 @@ public class HealthTests(AuthFixture fixture)
     [Fact]
     public async Task GET_health3_returns_ok()
     {
-        var resp = await _fixture.ApiClient.GetAsync("/api/v1/health3");
+        var kcClient = await fixture.CreateNewTestUserClientAsync(new TestUserInfo("tu", "pw", "t@t.de", "TV","TN", ["users"], ["REALM_ADMIN"]), CancellationToken.None);
+        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/health3");
 
         resp.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

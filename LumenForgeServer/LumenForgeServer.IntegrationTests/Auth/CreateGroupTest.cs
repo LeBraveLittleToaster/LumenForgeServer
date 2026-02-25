@@ -7,21 +7,23 @@ using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
+using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
 [Collection(AuthCollection.Name)]
 public class CreateGroupTest(AuthFixture fixture)
 {
+    
     [Fact]
     public async Task POST_new_group_creates_user()
     {
-        var myKeycloakId = fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
-
+        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        var respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -29,7 +31,7 @@ public class CreateGroupTest(AuthFixture fixture)
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
         
-        respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -41,36 +43,43 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_group_query_and_delete()
     {
-        var myKeycloakId = fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
-
+        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        var respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
         });
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
-        
-        respPutClient = await fixture.ApiClient.DeleteAsync($"/api/v1/auth/groups/{guid}");
+
+        respPutClient = await kcClient.AppApiClient.DeleteAsync($"/api/v1/auth/groups/{guid}");
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.NoContent);
-        
-        var respGroupQuery = await fixture.ApiClient.GetAsync($"/api/v1/auth/groups/{guid}");
+
+        var respGroupQuery = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/groups/{guid}");
         respGroupQuery.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-    
+
     [Fact]
     public async Task POST_new_group_and_add_user()
     {
-        var myKeycloakId = fixture.AccessToken.Claims.First(c => c.Type == "sub").Value;
+        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
 
+        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
+        {
+            userKcId = kcClient.KcUserId
+        });
+
+        respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
+        
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        var respPutClient = await fixture.ApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -80,19 +89,18 @@ public class CreateGroupTest(AuthFixture fixture)
         groupView.Should().NotBeNull();
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
-        
-        var groupGet = await fixture.ApiClient.GetAsync($"/api/v1/auth/groups/{groupView.Guid}");
-        groupGet.StatusCode.Should().Be(HttpStatusCode.OK);
-        
-        await fixture.ApiClient.GetAsync($"/api/v1/auth/users/{myKeycloakId}");
-        
-        var respAssignUser = await fixture.ApiClient.PutAsJsonAsync($"/api/v1/auth/groups/{groupView.Guid}/users", new AssignUserToGroupDto
-        {
-            userKcId = myKeycloakId,
-            assigneeKcId = null
-        });
-        
-        respAssignUser.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
 
+        var groupGet = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/groups/{groupView.Guid}");
+        groupGet.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
+
+        var respAssignUser = await kcClient.AppApiClient.PutAsJsonAsync($"/api/v1/auth/groups/{groupView.Guid}/users", new AssignUserToGroupDto
+        {
+            userKcId = kcClient.KcUserId
+        });
+
+        respAssignUser.StatusCode.Should().Be(HttpStatusCode.OK);
+
+    }
 }

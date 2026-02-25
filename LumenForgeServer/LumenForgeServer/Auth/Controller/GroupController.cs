@@ -104,7 +104,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
-    public async Task<IActionResult> AssignUserToGroup([FromForm] AssignUserToGroupDto dto, string groupGuid, CancellationToken ct)
+    public async Task<IActionResult> AssignUserToGroup([FromBody] AssignUserToGroupDto dto, [FromRoute] string groupGuid, CancellationToken ct)
     {
         GroupRequestValidator.ValidateAssignUserToGroupRequest(groupGuid, dto,  out var parsedGroupGuid);
 
