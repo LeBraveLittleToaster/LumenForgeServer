@@ -4,8 +4,8 @@ using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Auth.Factory;
 using LumenForgeServer.Auth.Persistance;
 using LumenForgeServer.Common.Exceptions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace LumenForgeServer.Auth.Service;
 
@@ -26,6 +26,20 @@ public class GroupService(IAuthRepository authRepository)
     {
         var group = await authRepository.GetGroupByGuidAsync(guid, ct);
         return group == null ? throw new NotFoundException("Group not found") : GroupView.FromEntity(group);
+    }
+
+    /// <summary>
+    /// Lists groups with optional paging and search.
+    /// </summary>
+    /// <param name="search">Optional search term.</param>
+    /// <param name="limit">Maximum number of records to return.</param>
+    /// <param name="offset">Number of records to skip.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>List of groups.</returns>
+    public async Task<IReadOnlyList<GroupView>> ListGroups(string? search, int limit, int offset, CancellationToken ct)
+    {
+        var groups = await authRepository.ListGroupsAsync(search, limit, offset, ct);
+        return groups.Select(GroupView.FromEntity).ToList();
     }
     
     /// <summary>
@@ -67,6 +81,42 @@ public class GroupService(IAuthRepository authRepository)
         return GroupView.FromEntity(group);
     }
 
+    /// <summary>
+    /// Updates a group record.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="dto">Payload containing updated group fields.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>The updated group.</returns>
+    public async Task<GroupView> UpdateGroup(Guid groupGuid, UpdateGroupDto dto, CancellationToken ct)
+    {
+        var group = await authRepository.GetGroupByGuidAsync(groupGuid, ct)
+            ?? throw new NotFoundException("Group not found");
+
+        if (!string.IsNullOrWhiteSpace(dto.Name))
+        {
+            group.Name = dto.Name;
+        }
+
+        if (!string.IsNullOrWhiteSpace(dto.Description))
+        {
+            group.Description = dto.Description;
+        }
+
+        group.UpdatedAt = SystemClock.Instance.GetCurrentInstant();
+
+        try
+        {
+            await authRepository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException e)
+        {
+            throw new UniqueConstraintException(e.Message, e);
+        }
+
+        return GroupView.FromEntity(group);
+    }
+
     public async Task DeleteGroupByGuid(Guid parsedGroupGuid, CancellationToken ct)
     {
         try
@@ -91,5 +141,83 @@ public class GroupService(IAuthRepository authRepository)
         {
             throw new UniqueConstraintException(e.Message, e);
         }
+    }
+
+    /// <summary>
+    /// Retrieves users assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Users assigned to the group.</returns>
+    public async Task<IReadOnlyList<UserView>> GetUsersForGroup(Guid groupGuid, CancellationToken ct)
+    {
+        var users = await authRepository.GetUsersForGroupAsync(groupGuid, ct);
+        return users.Select(UserView.FromEntity).ToList();
+    }
+
+    /// <summary>
+    /// Removes a user from a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="userKcId">Keycloak subject identifier to remove.</param>
+    /// <param name="ct">Cancellation token.</param>
+    public async Task RemoveUserFromGroup(Guid groupGuid, string userKcId, CancellationToken ct)
+    {
+        var group = await authRepository.GetGroupByGuidAsync(groupGuid, ct)
+            ?? throw new NotFoundException("Group not found");
+        var user = await authRepository.TryGetUserByKeycloakIdAsync(userKcId, ct);
+        if (user == null)
+        {
+            throw new NotFoundException($"User with Keycloak ID {userKcId} not found.");
+        }
+
+        await authRepository.RemoveUserFromGroupAsync(group, user, ct);
+        await authRepository.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// Retrieves roles assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Roles assigned to the group.</returns>
+    public async Task<IReadOnlyList<Role>> GetRolesForGroup(Guid groupGuid, CancellationToken ct)
+    {
+        return await authRepository.GetRolesForGroupAsync(groupGuid, ct);
+    }
+
+    /// <summary>
+    /// Assigns a role to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="role">Role to assign.</param>
+    /// <param name="ct">Cancellation token.</param>
+    public async Task AssignRoleToGroup(Guid groupGuid, Role role, CancellationToken ct)
+    {
+        var group = await authRepository.GetGroupByGuidAsync(groupGuid, ct)
+            ?? throw new NotFoundException("Group not found");
+        try
+        {
+            await authRepository.AssignRoleToGroupAsync(group, role, ct);
+            await authRepository.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException e)
+        {
+            throw new UniqueConstraintException(e.Message, e);
+        }
+    }
+
+    /// <summary>
+    /// Removes a role from a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="role">Role to remove.</param>
+    /// <param name="ct">Cancellation token.</param>
+    public async Task RemoveRoleFromGroup(Guid groupGuid, Role role, CancellationToken ct)
+    {
+        var group = await authRepository.GetGroupByGuidAsync(groupGuid, ct)
+            ?? throw new NotFoundException("Group not found");
+        await authRepository.RemoveRoleFromGroupAsync(group, role, ct);
+        await authRepository.SaveChangesAsync(ct);
     }
 }

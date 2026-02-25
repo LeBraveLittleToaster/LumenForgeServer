@@ -40,12 +40,28 @@ public interface IAuthRepository
     /// <returns>The user if found; otherwise <c>null</c>.</returns>
     Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct);
     /// <summary>
+    /// Lists users with optional paging and search.
+    /// </summary>
+    /// <param name="search">Optional search term.</param>
+    /// <param name="limit">Maximum number of records to return.</param>
+    /// <param name="offset">Number of records to skip.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>List of users.</returns>
+    Task<IReadOnlyList<User>> ListUsersAsync(string? search, int limit, int offset, CancellationToken ct);
+    /// <summary>
     /// Retrieves all roles assigned to a user via group memberships.
     /// </summary>
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Distinct roles assigned to the user.</returns>
     Task<HashSet<Role>> GetRolesForKcIdAsync(string keycloakId, CancellationToken ct);
+    /// <summary>
+    /// Retrieves groups assigned to a user.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Groups assigned to the user.</returns>
+    Task<IReadOnlyList<Group>> GetGroupsForUserAsync(string keycloakId, CancellationToken ct);
     
     
     /// <summary>
@@ -58,6 +74,15 @@ public interface IAuthRepository
     /// Thrown when the group cannot be found.
     /// </exception>
     Task<Group?> GetGroupByGuidAsync(Guid groupGuid, CancellationToken ct);
+    /// <summary>
+    /// Lists groups with optional paging and search.
+    /// </summary>
+    /// <param name="search">Optional search term.</param>
+    /// <param name="limit">Maximum number of records to return.</param>
+    /// <param name="offset">Number of records to skip.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>List of groups.</returns>
+    Task<IReadOnlyList<Group>> ListGroupsAsync(string? search, int limit, int offset, CancellationToken ct);
     /// <summary>
     /// Resolves the internal group id for a group guid.
     /// </summary>
@@ -83,6 +108,20 @@ public interface IAuthRepository
     /// Thrown when the group cannot be found.
     /// </exception>
     Task DeleteGroupByGuidAsync(Guid guid, CancellationToken ct);
+    /// <summary>
+    /// Retrieves users assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Users assigned to the group.</returns>
+    Task<IReadOnlyList<User>> GetUsersForGroupAsync(Guid groupGuid, CancellationToken ct);
+    /// <summary>
+    /// Retrieves roles assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Roles assigned to the group.</returns>
+    Task<IReadOnlyList<Role>> GetRolesForGroupAsync(Guid groupGuid, CancellationToken ct);
     
     /// <summary>
     /// Assigns a role to a group.

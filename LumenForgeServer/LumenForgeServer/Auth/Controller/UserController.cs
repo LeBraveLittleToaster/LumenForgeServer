@@ -1,4 +1,5 @@
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Query;
 using LumenForgeServer.Auth.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,23 @@ namespace LumenForgeServer.Auth.Controller;
 [Authorize] 
 public class UserController(UserService userService) : ControllerBase
 {
+    /// <summary>
+    /// Lists local users with optional paging and search.
+    /// </summary>
+    /// <param name="query">Paging and search parameters.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the user list.</returns>
+    [HttpGet("")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> ListUsers([FromQuery] ListQueryDto query, CancellationToken ct)
+    {
+        var users = await userService.ListUsers(query.Search, query.Limit, query.Offset, ct);
+        return Ok(users);
+    }
+
     /// <summary>
     /// Creates a user record for a Keycloak subject identifier.
     /// </summary>
@@ -58,6 +76,26 @@ public class UserController(UserService userService) : ControllerBase
     {
         var userView = await userService.GetUserByKeycloakId(userKcId, ct);
         return new JsonResult(userView);
+    }
+
+    /// <summary>
+    /// Retrieves groups assigned to a user.
+    /// </summary>
+    /// <param name="userKcId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the group list.</returns>
+    [HttpGet("{userKcId}/groups")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetUserGroups(
+        [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
+        string userKcId,
+        CancellationToken ct)
+    {
+        var groups = await userService.GetGroupsForUser(userKcId, ct);
+        return Ok(groups);
     }
     
     /// <summary>

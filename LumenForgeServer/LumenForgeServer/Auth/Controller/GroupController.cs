@@ -1,7 +1,10 @@
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Query;
 using LumenForgeServer.Auth.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace LumenForgeServer.Auth.Controller;
 
@@ -16,6 +19,23 @@ namespace LumenForgeServer.Auth.Controller;
 [Authorize]
 public class GroupController(GroupService groupService) : ControllerBase
 {
+    /// <summary>
+    /// Lists groups with optional paging and search.
+    /// </summary>
+    /// <param name="query">Paging and search parameters.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the group list.</returns>
+    [HttpGet("")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Produces("application/json")]
+    public async Task<IActionResult> ListGroups([FromQuery] ListQueryDto query, CancellationToken ct)
+    {
+        var groups = await groupService.ListGroups(query.Search, query.Limit, query.Offset, ct);
+        return Ok(groups);
+    }
+
     /// <summary>
     /// Retrieves a group by groupGuid.
     /// </summary>
@@ -57,6 +77,26 @@ public class GroupController(GroupService groupService) : ControllerBase
     }
 
     /// <summary>
+    /// Updates a group record.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="dto">Payload containing updated group fields.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the updated group payload.</returns>
+    [HttpPatch("{groupGuid:guid}")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Produces("application/json")]
+    public async Task<IActionResult> UpdateGroup([FromRoute] Guid groupGuid, [FromBody] UpdateGroupDto dto, CancellationToken ct)
+    {
+        var group = await groupService.UpdateGroup(groupGuid, dto, ct);
+        return Ok(group);
+    }
+
+    /// <summary>
     /// Delete a group record, identified by Guid.
     /// </summary>
     /// <param name="groupGuid">Path var containing the group Guid.</param>
@@ -93,5 +133,101 @@ public class GroupController(GroupService groupService) : ControllerBase
         await groupService.AssignUserToGroup(dto.assigneeKcId, dto.userKcId, groupGuid, ct);
         
         return Ok();
+    }
+
+    /// <summary>
+    /// Retrieves users assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the user list.</returns>
+    [HttpGet("{groupGuid:guid}/users")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetGroupUsers([FromRoute] Guid groupGuid, CancellationToken ct)
+    {
+        var users = await groupService.GetUsersForGroup(groupGuid, ct);
+        return Ok(users);
+    }
+
+    /// <summary>
+    /// Removes a user from a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="userKcId">Keycloak subject identifier to remove.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 204 response when removed successfully.</returns>
+    [HttpDelete("{groupGuid:guid}/users/{userKcId}")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> RemoveUserFromGroup(
+        [FromRoute] Guid groupGuid,
+        [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
+        string userKcId,
+        CancellationToken ct)
+    {
+        await groupService.RemoveUserFromGroup(groupGuid, userKcId, ct);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Retrieves roles assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 200 response with the role list.</returns>
+    [HttpGet("{groupGuid:guid}/roles")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> GetGroupRoles([FromRoute] Guid groupGuid, CancellationToken ct)
+    {
+        var roles = await groupService.GetRolesForGroup(groupGuid, ct);
+        return Ok(roles);
+    }
+
+    /// <summary>
+    /// Assigns a role to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="role">Role to assign.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 204 response when assigned successfully.</returns>
+    [HttpPut("{groupGuid:guid}/roles/{role}")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Produces("application/json")]
+    public async Task<IActionResult> AssignRoleToGroup([FromRoute] Guid groupGuid, [FromRoute] Role role, CancellationToken ct)
+    {
+        await groupService.AssignRoleToGroup(groupGuid, role, ct);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Removes a role from a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to update.</param>
+    /// <param name="role">Role to remove.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>A 204 response when removed successfully.</returns>
+    [HttpDelete("{groupGuid:guid}/roles/{role}")]
+    [Authorize(Roles = "REALM_ADMIN")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Produces("application/json")]
+    public async Task<IActionResult> RemoveRoleFromGroup([FromRoute] Guid groupGuid, [FromRoute] Role role, CancellationToken ct)
+    {
+        await groupService.RemoveRoleFromGroup(groupGuid, role, ct);
+        return NoContent();
     }
 }

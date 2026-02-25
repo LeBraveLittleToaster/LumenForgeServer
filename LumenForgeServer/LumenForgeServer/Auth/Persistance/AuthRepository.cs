@@ -29,7 +29,6 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// </summary>
     /// <param name="keycloakId">Keycloak subject identifier to delete.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public async Task DeleteUserByKcIdAsync(string userKcId, CancellationToken ct)
     {
         var user = await _db.Users
@@ -49,6 +48,30 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
         return await _db.Users
             .Where(u => u.UserKcId == keycloakId)
             .SingleOrDefaultAsync(ct);
+    }
+
+    /// <summary>
+    /// Lists users with optional paging and search.
+    /// </summary>
+    /// <param name="search">Optional search term.</param>
+    /// <param name="limit">Maximum number of records to return.</param>
+    /// <param name="offset">Number of records to skip.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>List of users.</returns>
+    public async Task<IReadOnlyList<User>> ListUsersAsync(string? search, int limit, int offset, CancellationToken ct)
+    {
+        var query = _db.Users.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(u => u.UserKcId.Contains(search));
+        }
+
+        return await query.AsNoTracking()
+            .OrderBy(u => u.UserKcId)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(ct);
     }
 
     /// <summary>
@@ -82,6 +105,22 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
             .Select(gr => gr.RoleId)
             .Distinct()
             .ToHashSetAsync(ct);
+    }
+
+    /// <summary>
+    /// Retrieves groups assigned to a user.
+    /// </summary>
+    /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Groups assigned to the user.</returns>
+    public async Task<IReadOnlyList<Group>> GetGroupsForUserAsync(string keycloakId, CancellationToken ct)
+    {
+        var userId = await GetUserIdByKeycloakIdAsync(keycloakId, ct);
+        return await _db.GroupUsers
+            .AsNoTracking()
+            .Where(gu => gu.UserId == userId)
+            .Select(gu => gu.Group)
+            .ToListAsync(ct);
     }
 
     /// <summary>
@@ -119,6 +158,30 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
         return group 
                ?? throw new NotFoundException($"Group {group} not found");
     }
+
+    /// <summary>
+    /// Lists groups with optional paging and search.
+    /// </summary>
+    /// <param name="search">Optional search term.</param>
+    /// <param name="limit">Maximum number of records to return.</param>
+    /// <param name="offset">Number of records to skip.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>List of groups.</returns>
+    public async Task<IReadOnlyList<Group>> ListGroupsAsync(string? search, int limit, int offset, CancellationToken ct)
+    {
+        var query = _db.Groups.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(g => g.Name.Contains(search) || g.Description.Contains(search));
+        }
+
+        return await query.AsNoTracking()
+            .OrderBy(g => g.Name)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(ct);
+    }
     
     /// <summary>
     /// Resolves the internal user id for a Keycloak subject identifier.
@@ -143,7 +206,6 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// </summary>
     /// <param name="group">Group entity to persist.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public async Task AddGroupAsync(Group group, CancellationToken ct)
     {
         await _db.Groups.AddAsync(group, ct).AsTask();
@@ -154,7 +216,6 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// </summary>
     /// <param name="guid">Group guid to delete.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task DeleteGroupByGuidAsync(Guid guid, CancellationToken ct)
     {
         var groupsRange = _db.Groups
@@ -164,15 +225,51 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     }
 
     /// <summary>
+    /// Retrieves users assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Users assigned to the group.</returns>
+    public async Task<IReadOnlyList<User>> GetUsersForGroupAsync(Guid groupGuid, CancellationToken ct)
+    {
+        var groupId = await GetGroupIdByGuidAsync(groupGuid, ct);
+        return await _db.GroupUsers
+            .AsNoTracking()
+            .Where(gu => gu.GroupId == groupId)
+            .Select(gu => gu.User)
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Retrieves roles assigned to a group.
+    /// </summary>
+    /// <param name="groupGuid">Group guid to look up.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>Roles assigned to the group.</returns>
+    public async Task<IReadOnlyList<Role>> GetRolesForGroupAsync(Guid groupGuid, CancellationToken ct)
+    {
+        var groupId = await GetGroupIdByGuidAsync(groupGuid, ct);
+        return await _db.GroupRoles
+            .AsNoTracking()
+            .Where(gr => gr.GroupId == groupId)
+            .Select(gr => gr.RoleId)
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
     /// Assigns a role to a group.
     /// </summary>
     /// <param name="group">Group receiving the role.</param>
     /// <param name="role">Role to assign.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task AssignRoleToGroupAsync(Group group, Role role, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
+        return _db.GroupRoles.AddAsync(new GroupRole
+        {
+            GroupId = groupId,
+            RoleId = role
+        }, ct).AsTask();
     }
 
     /// <summary>
@@ -181,10 +278,10 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="group">Group losing the role.</param>
     /// <param name="role">Role to remove.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task RemoveRoleFromGroupAsync(Group group, Role role, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
+        return RemoveGroupRoleAsync(groupId, role, ct);
     }
 
     /// <summary>
@@ -222,10 +319,11 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="group">Group to remove the user from.</param>
     /// <param name="user">User to remove.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task RemoveUserFromGroupAsync(Group group, User user, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
+        var userId = user.Id != 0 ? user.Id : throw new NotFoundException("User not found");
+        return RemoveGroupUserAsync(groupId, userId, ct);
     }
 
     /// <summary>
@@ -235,10 +333,13 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="group">Group to check.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns><c>true</c> if the user is in the group; otherwise <c>false</c>.</returns>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task<bool> IsUserInGroupAsync(User user, Group group, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
+        var userId = user.Id != 0 ? user.Id : throw new NotFoundException("User not found");
+        return _db.GroupUsers
+            .AsNoTracking()
+            .AnyAsync(gu => gu.GroupId == groupId && gu.UserId == userId, ct);
     }
 
     /// <summary>
@@ -248,10 +349,36 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="role">Role to check.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns><c>true</c> if the role is assigned; otherwise <c>false</c>.</returns>
-    /// <exception cref="NotImplementedException">Thrown because this method is not implemented.</exception>
     public Task<bool> HasGroupRoleAsync(Group group, Role role, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
+        return _db.GroupRoles
+            .AsNoTracking()
+            .AnyAsync(gr => gr.GroupId == groupId && gr.RoleId == role, ct);
+    }
+
+    private async Task RemoveGroupRoleAsync(long groupId, Role role, CancellationToken ct)
+    {
+        var groupRole = await _db.GroupRoles
+            .SingleOrDefaultAsync(gr => gr.GroupId == groupId && gr.RoleId == role, ct);
+        if (groupRole == null)
+        {
+            throw new NotFoundException($"Role {role} not assigned to group {groupId}.");
+        }
+
+        _db.GroupRoles.Remove(groupRole);
+    }
+
+    private async Task RemoveGroupUserAsync(long groupId, long userId, CancellationToken ct)
+    {
+        var groupUser = await _db.GroupUsers
+            .SingleOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId, ct);
+        if (groupUser == null)
+        {
+            throw new NotFoundException($"User {userId} is not assigned to group {groupId}.");
+        }
+
+        _db.GroupUsers.Remove(groupUser);
     }
 
     /// <summary>
