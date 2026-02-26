@@ -3,6 +3,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Billing.Domain;
 
+/// <summary>
+/// Represents an invoice generated for a rental.
+/// </summary>
 public class Invoice
 {
     public long Id { get; set; }

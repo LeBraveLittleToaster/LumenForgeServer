@@ -1,4 +1,5 @@
 using LumenForgeServer.Auth.Domain;
+using System.Text.Json.Serialization;
 
 namespace LumenForgeServer.Auth.Dto.Views;
 
@@ -7,7 +8,9 @@ namespace LumenForgeServer.Auth.Dto.Views;
 /// </summary>
 public sealed record RoleViewDto
 {
+    [JsonPropertyName("name")]
     public required string Name { get; init; }
+    [JsonPropertyName("value")]
     public required int Value { get; init; }
 
     public static RoleViewDto FromRole(Role role)

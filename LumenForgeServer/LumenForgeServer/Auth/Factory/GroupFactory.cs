@@ -1,9 +1,13 @@
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Command;
 using NodaTime;
 
 namespace LumenForgeServer.Auth.Factory;
 
+/// <summary>
+/// Factory methods for constructing group domain entities from DTO payloads.
+/// </summary>
 public static class GroupFactory
 {
     public static Group BuildGroup(AddGroupDto dto)

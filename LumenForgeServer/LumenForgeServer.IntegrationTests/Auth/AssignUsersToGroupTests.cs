@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Client;
@@ -12,6 +13,9 @@ using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
+/// <summary>
+/// Integration tests for group membership and role assignment endpoints.
+/// </summary>
 [Collection(AuthCollection.Name)]
 public class AssignUsersToGroupTests(AuthFixture fixture)
 {

@@ -4,6 +4,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Auth.Dto.Views;
 
+/// <summary>
+/// Read model representing a group for API responses.
+/// </summary>
 public class GroupView
 {
     /// <summary>

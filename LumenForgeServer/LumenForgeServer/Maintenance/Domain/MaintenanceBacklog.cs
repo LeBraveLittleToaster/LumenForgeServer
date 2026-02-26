@@ -4,6 +4,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Maintenance.Domain;
 
+/// <summary>
+/// Represents a reported maintenance issue affecting stock, rental, or checklist context.
+/// </summary>
 public class MaintenanceBacklog
 {
     public long Id { get; set; }

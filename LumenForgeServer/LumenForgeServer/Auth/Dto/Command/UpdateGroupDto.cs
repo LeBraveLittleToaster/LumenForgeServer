@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace LumenForgeServer.Auth.Dto;
+namespace LumenForgeServer.Auth.Dto.Command;
 
 /// <summary>
 /// Payload for updating group metadata.
@@ -12,6 +13,7 @@ public sealed class UpdateGroupDto : IValidatableObject
     /// </summary>
     [MinLength(1)]
     [RegularExpression(@".*\S.*")]
+    [JsonPropertyName("name")]
     public string? Name { get; init; }
 
     /// <summary>
@@ -19,6 +21,7 @@ public sealed class UpdateGroupDto : IValidatableObject
     /// </summary>
     [MinLength(10)]
     [RegularExpression(@".*\S.*")]
+    [JsonPropertyName("description")]
     public string? Description { get; init; }
 
     /// <summary>

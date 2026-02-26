@@ -3,6 +3,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
+/// <summary>
+/// Represents a checklist verification row tied to a rental item.
+/// </summary>
 public class ChecklistItem
 {
     public long Id { get; set; }

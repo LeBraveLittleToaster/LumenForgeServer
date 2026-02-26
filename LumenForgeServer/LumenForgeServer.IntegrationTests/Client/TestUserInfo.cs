@@ -1,5 +1,8 @@
 namespace LumenForgeServer.IntegrationTests.Client;
 
+/// <summary>
+/// Immutable test user payload used to provision Keycloak identities.
+/// </summary>
 public record TestUserInfo(
     string Username,
     string Password,

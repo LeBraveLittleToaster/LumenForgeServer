@@ -7,49 +7,28 @@ namespace LumenForgeServer.Inventory.Persistance;
 /// </summary>
 public interface IInventoryRepository
 {
-    
-    /// <summary>
-    /// Adds a vendor to the persistence store.
-    /// </summary>
-    /// <param name="vendor">Vendor entity to persist.</param>
-    /// <param name="ct">Cancellation token.</param>
-    Task AddVendor(Vendor vendor, CancellationToken ct);
-    /// <summary>
-    /// Resolves the internal vendor id for a vendor UUID.
-    /// </summary>
-    /// <param name="vendorUuid">Vendor UUID to look up.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>The vendor id if found; otherwise <c>null</c>.</returns>
-    Task<long?> TryGetVendorIdByUuidAsync(Guid vendorUuid, CancellationToken ct);
-    
-    
-    /// <summary>
-    /// Resolves internal category ids for a set of category UUIDs.
-    /// </summary>
-    /// <param name="uuids">Category UUIDs to look up.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>List of internal category ids that were found.</returns>
-    Task<IReadOnlyList<long>> GetCategoryIdsByUuidsAsync(IReadOnlyCollection<Guid> uuids, CancellationToken ct);
-    
-    /// <summary>
-    /// Adds a device aggregate to the persistence store.
-    /// </summary>
-    /// <param name="device">Device entity to persist.</param>
-    /// <param name="ct">Cancellation token.</param>
+    Task AddCategoryAsync(Category category, CancellationToken ct);
+    Task<Category?> GetCategoryByGuidAsync(Guid categoryGuid, CancellationToken ct);
+    Task<IReadOnlyList<Category>> ListCategoriesAsync(string? search, int limit, int offset, CancellationToken ct);
+    Task DeleteCategoryAsync(Category category, CancellationToken ct);
+
+    Task AddVendorAsync(Vendor vendor, CancellationToken ct);
+    Task<Vendor?> GetVendorByGuidAsync(Guid vendorGuid, CancellationToken ct);
+    Task<IReadOnlyList<Vendor>> ListVendorsAsync(string? search, int limit, int offset, CancellationToken ct);
+    Task DeleteVendorAsync(Vendor vendor, CancellationToken ct);
+    Task<long?> TryGetVendorIdByGuidAsync(Guid vendorGuid, CancellationToken ct);
+
+    Task<long?> TryGetMaintenanceStatusIdByGuidAsync(Guid maintenanceStatusGuid, CancellationToken ct);
+    Task<long?> TryGetAnyMaintenanceStatusIdAsync(CancellationToken ct);
+    Task AddMaintenanceStatusAsync(MaintenanceStatus maintenanceStatus, CancellationToken ct);
+
+    Task<IReadOnlyList<long>> GetCategoryIdsByGuidsAsync(IReadOnlyCollection<Guid> categoryGuids, CancellationToken ct);
+
     Task AddDeviceAsync(Device device, CancellationToken ct);
-    
+    Task<Device?> GetDeviceByGuidAsync(Guid deviceGuid, CancellationToken ct);
+    Task<IReadOnlyList<Device>> ListDevicesAsync(string? search, int limit, int offset, CancellationToken ct);
+    Task DeleteDeviceAsync(Device device, CancellationToken ct);
+    Task ReplaceDeviceCategoriesAsync(long deviceId, IReadOnlyCollection<long> categoryIds, CancellationToken ct);
 
-    /// <summary>
-    /// Adds a category to the persistence store.
-    /// </summary>
-    /// <param name="category">Category entity to persist.</param>
-    /// <param name="ct">Cancellation token.</param>
-    Task AddCategory(Category category, CancellationToken ct);
-
-    /// <summary>
-    /// Persists pending changes to the underlying data store.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="Microsoft.EntityFrameworkCore.DbUpdateException">Thrown when persistence fails.</exception>
     Task SaveChangesAsync(CancellationToken ct);
 }

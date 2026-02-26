@@ -5,6 +5,7 @@ using LumenForgeServer.Auth.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using LumenForgeServer.Auth.Dto.Command;
 
 namespace LumenForgeServer.Auth.Controller;
 
@@ -22,6 +23,9 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <summary>
     /// Lists groups with optional paging and search.
     /// </summary>
+    /// <remarks>
+    /// Example query: <c>GET /api/v1/auth/groups?search=ops&amp;limit=20&amp;offset=0</c>
+    /// </remarks>
     /// <param name="query">Paging and search parameters.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the group list.</returns>

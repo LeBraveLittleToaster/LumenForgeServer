@@ -7,75 +7,179 @@ namespace LumenForgeServer.Inventory.Persistance;
 /// <summary>
 /// EF Core-backed repository for inventory entities.
 /// </summary>
-public sealed class InventoryRepository(AppDbContext _db) : IInventoryRepository
+public sealed class InventoryRepository(AppDbContext db) : IInventoryRepository
 {
-    /// <summary>
-    /// Adds a vendor to the persistence store.
-    /// </summary>
-    /// <param name="vendor">Vendor entity to persist.</param>
-    /// <param name="ct">Cancellation token.</param>
-    public Task AddVendor(Vendor vendor, CancellationToken ct)
+    public Task AddCategoryAsync(Category category, CancellationToken ct)
+        => db.Categories.AddAsync(category, ct).AsTask();
+
+    public Task<Category?> GetCategoryByGuidAsync(Guid categoryGuid, CancellationToken ct)
+        => db.Categories.SingleOrDefaultAsync(c => c.Guid == categoryGuid, ct);
+
+    public async Task<IReadOnlyList<Category>> ListCategoriesAsync(string? search, int limit, int offset, CancellationToken ct)
     {
-        return _db.Vendors.AddAsync(vendor, ct).AsTask();
+        var query = db.Categories.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(c =>
+                c.Name.Contains(search) ||
+                (c.Description != null && c.Description.Contains(search)));
+        }
+
+        return await query
+            .AsNoTracking()
+            .OrderBy(c => c.Name)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(ct);
     }
-    
-    /// <summary>
-    /// Resolves the internal vendor id for a vendor UUID.
-    /// </summary>
-    /// <param name="vendorUuid">Vendor UUID to look up.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>The vendor id if found; otherwise <c>null</c>.</returns>
-    public async Task<long?> TryGetVendorIdByUuidAsync(Guid vendorUuid, CancellationToken ct)
+
+    public Task DeleteCategoryAsync(Category category, CancellationToken ct)
     {
-        return await _db.Vendors
-            .Where(v => v.Guid == vendorUuid)
+        db.Categories.Remove(category);
+        return Task.CompletedTask;
+    }
+
+    public Task AddVendorAsync(Vendor vendor, CancellationToken ct)
+        => db.Vendors.AddAsync(vendor, ct).AsTask();
+
+    public Task<Vendor?> GetVendorByGuidAsync(Guid vendorGuid, CancellationToken ct)
+        => db.Vendors.SingleOrDefaultAsync(v => v.Guid == vendorGuid, ct);
+
+    public async Task<IReadOnlyList<Vendor>> ListVendorsAsync(string? search, int limit, int offset, CancellationToken ct)
+    {
+        var query = db.Vendors.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(v => v.Name.Contains(search));
+        }
+
+        return await query
+            .AsNoTracking()
+            .OrderBy(v => v.Name)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(ct);
+    }
+
+    public Task DeleteVendorAsync(Vendor vendor, CancellationToken ct)
+    {
+        db.Vendors.Remove(vendor);
+        return Task.CompletedTask;
+    }
+
+    public Task<long?> TryGetVendorIdByGuidAsync(Guid vendorGuid, CancellationToken ct)
+    {
+        return db.Vendors
+            .Where(v => v.Guid == vendorGuid)
             .Select(v => (long?)v.Id)
             .SingleOrDefaultAsync(ct);
     }
 
-    /// <summary>
-    /// Resolves internal category ids for a set of category UUIDs.
-    /// </summary>
-    /// <param name="uuids">Category UUIDs to look up.</param>
-    /// <param name="ct">Cancellation token.</param>
-    /// <returns>List of internal category ids that were found.</returns>
-    public async Task<IReadOnlyList<long>> GetCategoryIdsByUuidsAsync(
-        IReadOnlyCollection<Guid> uuids,
-        CancellationToken ct)
+    public Task<long?> TryGetMaintenanceStatusIdByGuidAsync(Guid maintenanceStatusGuid, CancellationToken ct)
     {
-        if (uuids.Count == 0) return Array.Empty<long>();
+        return db.MaintenanceStatuses
+            .Where(ms => ms.Uuid == maintenanceStatusGuid)
+            .Select(ms => (long?)ms.Id)
+            .SingleOrDefaultAsync(ct);
+    }
 
-        return await _db.Categories
-            .Where(c => uuids.Contains(c.Guid))
+    public Task<long?> TryGetAnyMaintenanceStatusIdAsync(CancellationToken ct)
+    {
+        return db.MaintenanceStatuses
+            .OrderBy(ms => ms.Name)
+            .Select(ms => (long?)ms.Id)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public Task AddMaintenanceStatusAsync(MaintenanceStatus maintenanceStatus, CancellationToken ct)
+        => db.MaintenanceStatuses.AddAsync(maintenanceStatus, ct).AsTask();
+
+    public async Task<IReadOnlyList<long>> GetCategoryIdsByGuidsAsync(IReadOnlyCollection<Guid> categoryGuids, CancellationToken ct)
+    {
+        if (categoryGuids.Count == 0)
+        {
+            return Array.Empty<long>();
+        }
+
+        return await db.Categories
+            .Where(c => categoryGuids.Contains(c.Guid))
             .Select(c => c.Id)
             .ToListAsync(ct);
     }
 
-    /// <summary>
-    /// Adds a device aggregate to the persistence store.
-    /// </summary>
-    /// <param name="device">Device entity to persist.</param>
-    /// <param name="ct">Cancellation token.</param>
     public Task AddDeviceAsync(Device device, CancellationToken ct)
-        => _db.Devices.AddAsync(device, ct).AsTask();
-    
-    /// <summary>
-    /// Adds a category to the persistence store.
-    /// </summary>
-    /// <param name="category">Category entity to persist.</param>
-    /// <param name="ct">Cancellation token.</param>
-    public Task AddCategory(Category category, CancellationToken ct)
+        => db.Devices.AddAsync(device, ct).AsTask();
+
+    public Task<Device?> GetDeviceByGuidAsync(Guid deviceGuid, CancellationToken ct)
     {
-        return _db.Categories.AddAsync(category, ct).AsTask();
+        return BuildDeviceGraphQuery()
+            .SingleOrDefaultAsync(d => d.Guid == deviceGuid, ct);
     }
 
-    /// <summary>
-    /// Persists pending changes to the underlying data store.
-    /// </summary>
-    /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="DbUpdateException">Thrown when persistence fails.</exception>
-    public Task SaveChangesAsync(CancellationToken ct)
+    public async Task<IReadOnlyList<Device>> ListDevicesAsync(string? search, int limit, int offset, CancellationToken ct)
     {
-        return _db.SaveChangesAsync(ct);
+        var query = BuildDeviceGraphQuery()
+            .AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            query = query.Where(d =>
+                d.SerialNumber.Contains(search) ||
+                (d.DeviceName != null && d.DeviceName.Contains(search)) ||
+                (d.DeviceDescription != null && d.DeviceDescription.Contains(search)) ||
+                d.Vendor.Name.Contains(search) ||
+                d.DeviceCategories.Any(dc => dc.Category.Name.Contains(search)));
+        }
+
+        return await query
+            .OrderBy(d => d.SerialNumber)
+            .Skip(offset)
+            .Take(limit)
+            .ToListAsync(ct);
+    }
+
+    public Task DeleteDeviceAsync(Device device, CancellationToken ct)
+    {
+        db.Devices.Remove(device);
+        return Task.CompletedTask;
+    }
+
+    public async Task ReplaceDeviceCategoriesAsync(long deviceId, IReadOnlyCollection<long> categoryIds, CancellationToken ct)
+    {
+        var existing = await db.DeviceCategories
+            .Where(dc => dc.DeviceId == deviceId)
+            .ToListAsync(ct);
+
+        db.DeviceCategories.RemoveRange(existing);
+
+        var uniqueCategoryIds = categoryIds
+            .Distinct()
+            .ToArray();
+
+        foreach (var categoryId in uniqueCategoryIds)
+        {
+            await db.DeviceCategories.AddAsync(new DeviceCategory
+            {
+                DeviceId = deviceId,
+                CategoryId = categoryId
+            }, ct);
+        }
+    }
+
+    public Task SaveChangesAsync(CancellationToken ct)
+        => db.SaveChangesAsync(ct);
+
+    private IQueryable<Device> BuildDeviceGraphQuery()
+    {
+        return db.Devices
+            .Include(d => d.Vendor)
+            .Include(d => d.MaintenanceStatus)
+            .Include(d => d.Stock)
+            .Include(d => d.Parameters)
+            .Include(d => d.DeviceCategories)
+            .ThenInclude(dc => dc.Category)
+            .AsSplitQuery();
     }
 }

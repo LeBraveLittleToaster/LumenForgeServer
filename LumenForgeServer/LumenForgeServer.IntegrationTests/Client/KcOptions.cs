@@ -1,5 +1,8 @@
 ﻿namespace LumenForgeServer.IntegrationTests.Client;
 
+/// <summary>
+/// Configuration settings used by Keycloak-aware integration test clients.
+/// </summary>
 public class KcOptions
 {
     public string KcAdminPass { get; init; }

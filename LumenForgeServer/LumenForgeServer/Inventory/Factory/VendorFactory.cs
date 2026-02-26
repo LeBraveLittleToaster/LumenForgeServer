@@ -14,18 +14,13 @@ public static class VendorFactory
     /// </summary>
     /// <param name="dto">Payload containing vendor details.</param>
     /// <returns>A new <see cref="Vendor"/> entity.</returns>
-    /// <remarks>
-    /// The current implementation appends a generated GUID to the vendor name and writes it to stdout.
-    /// </remarks>
     internal static Vendor Create(CreateVendorDto dto)
     {
         var dateNow = SystemClock.Instance.GetCurrentInstant();
-        var guid = Guid.CreateVersion7();
-        Console.WriteLine(guid.ToString());
         return new Vendor
         {
-            Name = dto.Name + guid,
-            Guid = guid,
+            Name = dto.Name,
+            Guid = Guid.CreateVersion7(),
             CreatedAt = dateNow,
             UpdatedAt = dateNow,
         };

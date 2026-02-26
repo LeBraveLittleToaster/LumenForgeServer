@@ -2,6 +2,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
+/// <summary>
+/// Lookup entity describing the current state of a rental.
+/// </summary>
 public class RentalStatus
 {
     public long Id { get; set; }

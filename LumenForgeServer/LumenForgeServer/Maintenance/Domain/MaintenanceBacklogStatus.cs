@@ -2,6 +2,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Maintenance.Domain;
 
+/// <summary>
+/// Lookup entity describing workflow status for a maintenance backlog entry.
+/// </summary>
 public class MaintenanceBacklogStatus
 {
     public long Id { get; set; }

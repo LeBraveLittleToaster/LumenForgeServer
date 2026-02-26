@@ -3,6 +3,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
+/// <summary>
+/// Represents a rental request and lifecycle state for one customer transaction.
+/// </summary>
 public class Rental
 {
     public long Id { get; set; }

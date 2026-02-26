@@ -4,6 +4,9 @@ using System.Text.Json;
 
 namespace LumenForgeServer.IntegrationTests.Client;
 
+/// <summary>
+/// Minimal Keycloak admin client for creating test users during integration tests.
+/// </summary>
 public class KcAdminClient
 {
     private static HttpClient _httpClient = new();

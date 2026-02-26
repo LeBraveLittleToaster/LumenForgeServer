@@ -52,4 +52,10 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program { }
+namespace LumenForgeServer
+{
+    /// <summary>
+    /// Marker type used by integration tests to reference the API entry assembly.
+    /// </summary>
+    public partial class Program { }
+}

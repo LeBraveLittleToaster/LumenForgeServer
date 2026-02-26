@@ -1,5 +1,7 @@
 using LumenForgeServer.Inventory.Dto.Create;
+using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Inventory.Service;
+using NodaTime;
 
 namespace LumenForgeServer.Common.Database;
 
@@ -15,7 +17,6 @@ public static class DevDbSeeder
     /// <returns>A task that completes when seeding is finished.</returns>
     /// <remarks>
     /// This uses <c>EnsureDeletedAsync</c> and <c>EnsureCreatedAsync</c> rather than migrations.
-    /// The current implementation does not await the vendor creation task.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown when required services are missing from the service provider.
@@ -35,7 +36,7 @@ public static class DevDbSeeder
         var db = scope.ServiceProvider
             .GetRequiredService<AppDbContext>();
 
-        var inventoryService = scope.ServiceProvider.GetRequiredService<InventoryService>();
+        var vendorService = scope.ServiceProvider.GetRequiredService<VendorService>();
 
         try
         {
@@ -50,9 +51,24 @@ public static class DevDbSeeder
             logger.LogInformation("Seeding dummy data...");
 
 
-            var vendor = await inventoryService
-                .AddVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
-            logger.LogInformation("Created Vendor: {vendor}", vendor);
+            var vendor = await vendorService.CreateVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
+            logger.LogInformation("Created Vendor: {vendorName}", vendor.Name);
+
+            if (!db.MaintenanceStatuses.Any())
+            {
+                var now = SystemClock.Instance.GetCurrentInstant();
+                db.MaintenanceStatuses.Add(new MaintenanceStatus
+                {
+                    Uuid = Guid.CreateVersion7(),
+                    Name = "Operational",
+                    Description = "Default maintenance status.",
+                    CreatedAt = now,
+                    UpdatedAt = now
+                });
+                await db.SaveChangesAsync();
+                logger.LogInformation("Seeded default maintenance status.");
+            }
+
             logger.LogInformation("Development database reset and seeding completed successfully.");
         }
         catch (Exception ex)

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using LumenForgeServer.Auth.Dto;
+using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Client;
@@ -11,6 +12,9 @@ using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
+/// <summary>
+/// Integration tests for group CRUD and membership workflow behavior.
+/// </summary>
 [Collection(AuthCollection.Name)]
 public class CreateGroupTest(AuthFixture fixture)
 {

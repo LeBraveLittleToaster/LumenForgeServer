@@ -4,6 +4,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
+/// <summary>
+/// Represents a requested stock quantity line item within a rental.
+/// </summary>
 public class RentalItem
 {
     public long Id { get; set; }

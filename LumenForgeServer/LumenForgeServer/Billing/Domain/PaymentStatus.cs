@@ -2,6 +2,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Billing.Domain;
 
+/// <summary>
+/// Lookup entity describing the status of a payment.
+/// </summary>
 public class PaymentStatus
 {
     public long Id { get; set; }

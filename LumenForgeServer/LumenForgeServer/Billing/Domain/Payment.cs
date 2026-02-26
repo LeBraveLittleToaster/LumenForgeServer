@@ -3,6 +3,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Billing.Domain;
 
+/// <summary>
+/// Represents a payment transaction applied to an invoice.
+/// </summary>
 public class Payment
 {
     public long Id { get; set; }

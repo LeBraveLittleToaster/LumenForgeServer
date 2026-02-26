@@ -2,6 +2,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
+/// <summary>
+/// Represents a generated report summarizing the outcome of a rental.
+/// </summary>
 public class RentalReport
 {
     public long Id { get; set; }

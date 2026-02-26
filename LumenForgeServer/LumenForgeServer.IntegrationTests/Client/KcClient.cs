@@ -4,6 +4,9 @@ using System.Text.Json;
 
 namespace LumenForgeServer.IntegrationTests.Client;
 
+/// <summary>
+/// Authenticated app client backed by a Keycloak access token for integration tests.
+/// </summary>
 public sealed class KcClient
 {
     private KcClient(string kcUserId, TestUserInfo testUserInfo, KcOptions kcOptions)

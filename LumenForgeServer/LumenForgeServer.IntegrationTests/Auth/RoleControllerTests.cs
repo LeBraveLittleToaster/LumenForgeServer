@@ -10,6 +10,9 @@ using LumenForgeServer.IntegrationTests.Fixtures;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
+/// <summary>
+/// Integration tests for role catalog endpoints.
+/// </summary>
 [Collection(AuthCollection.Name)]
 public class RoleControllerTests(AuthFixture fixture)
 {

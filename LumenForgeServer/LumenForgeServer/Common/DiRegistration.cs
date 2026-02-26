@@ -6,7 +6,6 @@ using LumenForgeServer.Auth.Persistance;
 using LumenForgeServer.Auth.Service;
 using LumenForgeServer.Common.Database;
 using LumenForgeServer.Common.Exceptions;
-using LumenForgeServer.Inventory.Controller;
 using LumenForgeServer.Inventory.Persistance;
 using LumenForgeServer.Inventory.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,7 +60,9 @@ public static class DiRegistration
     public static void RegisterServices(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<GroupService>();
-        builder.Services.AddScoped<InventoryService>();
+        builder.Services.AddScoped<CategoryService>();
+        builder.Services.AddScoped<VendorService>();
+        builder.Services.AddScoped<DeviceService>();
         builder.Services.AddScoped<UserService>();
     }
 

@@ -4,6 +4,9 @@ namespace LumenForgeServer.IntegrationTests.Fixtures;
 
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Fixture for creating database contexts against the integration-test database.
+/// </summary>
 public class AppDbFixture
 {
     public string ConnectionString { get; }

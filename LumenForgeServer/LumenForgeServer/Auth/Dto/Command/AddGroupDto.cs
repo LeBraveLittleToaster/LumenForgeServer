@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace LumenForgeServer.Auth.Dto;
+namespace LumenForgeServer.Auth.Dto.Command;
 
 /// <summary>
 /// Payload for creating a group with a name and description.
@@ -13,6 +14,7 @@ public record AddGroupDto
     [Required]
     [MinLength(1)]
     [RegularExpression(@".*\S.*")]
+    [JsonPropertyName("name")]
     public required string Name { get; set; } = null!;
     /// <summary>
     /// Short description explaining the group's purpose.
@@ -20,5 +22,6 @@ public record AddGroupDto
     [Required]
     [MinLength(10)]
     [RegularExpression(@".*\S.*")]
+    [JsonPropertyName("description")]
     public required string Description { get; set; }
 }

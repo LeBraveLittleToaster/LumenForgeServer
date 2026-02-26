@@ -3,6 +3,9 @@ using NodaTime;
 
 namespace LumenForgeServer.Rentals.Domain;
 
+/// <summary>
+/// Represents a pickup or dropoff checklist associated with a rental.
+/// </summary>
 public class Checklist
 {
     public long Id { get; set; }

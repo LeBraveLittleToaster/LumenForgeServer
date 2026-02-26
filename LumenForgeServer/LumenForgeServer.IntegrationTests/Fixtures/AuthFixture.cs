@@ -4,6 +4,9 @@ using LumenForgeServer.IntegrationTests.Client;
 
 namespace LumenForgeServer.IntegrationTests.Fixtures;
 
+/// <summary>
+/// Fixture for provisioning authenticated Keycloak test clients.
+/// </summary>
 public sealed class AuthFixture : IAsyncLifetime
 {
     private KcAdminClient KcAdminApiClient { get; }
