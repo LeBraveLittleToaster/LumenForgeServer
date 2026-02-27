@@ -10,7 +10,7 @@ namespace LumenForgeServer.Auth.Controller;
 /// </summary>
 [Route("api/v1/auth/roles")]
 [ApiController]
-[Authorize(Roles = "REALM_ADMIN")]
+[Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
 public class RoleController : ControllerBase
 {
     /// <summary>

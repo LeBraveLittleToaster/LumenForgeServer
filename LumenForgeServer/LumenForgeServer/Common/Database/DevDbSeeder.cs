@@ -37,6 +37,7 @@ public static class DevDbSeeder
             .GetRequiredService<AppDbContext>();
 
         var vendorService = scope.ServiceProvider.GetRequiredService<VendorService>();
+        var categoryService = scope.ServiceProvider.GetRequiredService<CategoryService>();
 
         try
         {
@@ -53,6 +54,12 @@ public static class DevDbSeeder
 
             var vendor = await vendorService.CreateVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
             logger.LogInformation("Created Vendor: {vendorName}", vendor.Name);
+
+            for (var i = 0; i < 10; i++)
+            {
+                var category = await categoryService.CreateCategory(new CreateCategoryDto { Name = "Some Category " + i, Description = "Description " + i}, CancellationToken.None);
+                logger.LogInformation("Created Category: {categoryName}", category.Name);
+            }
 
             if (!db.MaintenanceStatuses.Any())
             {

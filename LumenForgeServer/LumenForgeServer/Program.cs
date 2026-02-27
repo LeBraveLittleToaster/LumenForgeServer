@@ -8,6 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 var keycloakAuthority = builder.Configuration["Keycloak:Authority"]!;
 var keycloakClientId = builder.Configuration["Keycloak:ClientId"]!;
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 
 
@@ -28,6 +37,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {

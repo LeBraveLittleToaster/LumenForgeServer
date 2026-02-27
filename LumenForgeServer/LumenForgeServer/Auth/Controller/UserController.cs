@@ -16,7 +16,7 @@ namespace LumenForgeServer.Auth.Controller;
 /// </remarks>
 [Route("api/v1/auth/users")]
 [ApiController]
-[Authorize] 
+[Authorize(Roles = "REALM_ADMIN")]
 public class UserController(UserService userService) : ControllerBase
 {
     /// <summary>
@@ -29,7 +29,6 @@ public class UserController(UserService userService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the user list.</returns>
     [HttpGet("")]
-    [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -46,7 +45,6 @@ public class UserController(UserService userService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 201 response with the created user payload.</returns>
     [HttpPut("")]
-    [Authorize(Roles = "REALM_ADMIN")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -88,8 +86,7 @@ public class UserController(UserService userService) : ControllerBase
     /// <param name="userKcId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the group list.</returns>
-    [HttpGet("{userKcId}/groups")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [HttpGet("{userKcId}/groups")] 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
