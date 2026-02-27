@@ -1,3 +1,4 @@
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.Query;
 using LumenForgeServer.Inventory.Dto.Update;
@@ -15,7 +16,6 @@ namespace LumenForgeServer.Inventory.Controller;
 /// </remarks>
 [Route("api/v1/inventory/categories")]
 [ApiController]
-[Authorize]
 public class CategoryController(CategoryService categoryService) : ControllerBase
 {
     /// <summary>
@@ -28,6 +28,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with category results.</returns>
     [HttpGet("")]
+    [Authorize(Roles = nameof(Role.CategoryRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -38,6 +39,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     }
 
     [HttpGet("{categoryGuid:guid}")]
+    [Authorize(Roles = nameof(Role.CategoryRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
@@ -49,6 +51,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
 
     [HttpPut("")]
     [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.CategoryCreate))]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -66,7 +69,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+    [Authorize(Roles = nameof(Role.CategoryUpdate))]
     [Produces("application/json")]
     public async Task<IActionResult> UpdateCategory([FromRoute] Guid categoryGuid, [FromBody] UpdateCategoryDto dto, CancellationToken ct)
     {
@@ -75,7 +78,7 @@ public class CategoryController(CategoryService categoryService) : ControllerBas
     }
 
     [HttpDelete("{categoryGuid:guid}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.CategoryDelete))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]

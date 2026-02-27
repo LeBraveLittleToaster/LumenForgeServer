@@ -14,6 +14,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using NodaTime;
+using NuGet.Packaging;
 
 namespace LumenForgeServer.Common;
 
@@ -157,57 +158,58 @@ public static class DiRegistration
                 {
                     OnTokenValidated = async ctx =>
                     {
-                        var identity = ctx.Principal?.Identity as ClaimsIdentity;
-                        if (identity is null) return;
-
+                        if (ctx.Principal?.Identity is not ClaimsIdentity identity) return;
+                        
                         var keycloakUserId = ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (keycloakUserId is null) return;
 
                         var jti = ctx.Principal?.FindFirst("jti")?.Value ?? "no-jti";
-                        var cacheKey = $"roles:{keycloakUserId}:{jti}";
-                        
-                        AddKeycloakRoles(identity);
+                        var cacheKey = $"app-roles:{keycloakUserId}:{jti}";
                         
                         var cache= ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-                        if (!cache.TryGetValue(cacheKey, out string[]? roles) || roles is null)
-                        {
-                            var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
-                            var dbRoles = await userService.GetRolesForKcId(keycloakUserId, ctx.HttpContext.RequestAborted);
-
-                            roles = dbRoles.Select(r => r.ToString()).Distinct().ToArray();
-
-                            cache.Set(cacheKey, roles, new MemoryCacheEntryOptions
+                        if (!cache.TryGetValue(cacheKey, out string[]? appRoleNames) || appRoleNames is null){
+                        
+                            if (IsPrivilegedRole(["REALM_ADMIN", "REALM_OWNER"], identity))
+                            {
+                                appRoleNames = RoleClaims.AllAppRoles;
+                            }
+                            else
+                            {
+                                var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
+                                var dbRoles = await userService.GetRolesForKcId(keycloakUserId, ctx.HttpContext.RequestAborted);
+                                appRoleNames = dbRoles.Select(r => r.ToString()).Distinct().ToArray();
+                            }
+                            cache.Set(cacheKey, appRoleNames, new MemoryCacheEntryOptions
                             {
                                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
                             });
                         }
 
-                        identity.AddClaims(
-                            roles.Select(x => new Claim(ClaimTypes.Role, x)));
+                        identity.AddClaims(appRoleNames.Select(x => new Claim(ClaimTypes.Role, x)));
+                        Console.WriteLine("DEBUG LINE");
                     }
                 };
                 options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
             });
         builder.Services.AddAuthorization();
     }
-
+    
     /// <summary>
     /// Adds role claims from Keycloak "realm_access" into the current identity.
     /// </summary>
     /// <param name="identity">Identity to add roles to.</param>
     /// <exception cref="JsonException">Thrown when the realm_access claim contains invalid JSON.</exception>
-    private static void AddKeycloakRoles(ClaimsIdentity identity)
+    private static bool IsPrivilegedRole(string[] keys, ClaimsIdentity identity)
     {
         var realmAccess = identity.FindFirst("realm_access")?.Value;
-        if (string.IsNullOrWhiteSpace(realmAccess) || !realmAccess.TrimStart().StartsWith("{")) return;
+        if (string.IsNullOrWhiteSpace(realmAccess) || !realmAccess.TrimStart().StartsWith("{")) return false;
         using var doc = JsonDocument.Parse(realmAccess);
         if (!doc.RootElement.TryGetProperty("roles", out var roles) ||
-            roles.ValueKind != JsonValueKind.Array) return;
-        foreach (var r in roles.EnumerateArray().Select(x => x.GetString())
-                     .Where(x => !string.IsNullOrWhiteSpace(x)))
-        {
-            identity.AddClaim(new Claim(ClaimTypes.Role, r!));
-        }
+            roles.ValueKind != JsonValueKind.Array) return false;
+        return roles.EnumerateArray()
+            .Select(x => x.GetString())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Any(r => keys.Contains(r));
     }
 
     /// <summary>

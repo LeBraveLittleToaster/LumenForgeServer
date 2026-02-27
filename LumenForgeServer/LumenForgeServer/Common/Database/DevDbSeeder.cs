@@ -52,13 +52,11 @@ public static class DevDbSeeder
             logger.LogInformation("Seeding dummy data...");
 
 
-            var vendor = await vendorService.CreateVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
-            logger.LogInformation("Created Vendor: {vendorName}", vendor.Name);
+            await vendorService.CreateVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
 
             for (var i = 0; i < 10; i++)
             {
-                var category = await categoryService.CreateCategory(new CreateCategoryDto { Name = "Some Category " + i, Description = "Description " + i}, CancellationToken.None);
-                logger.LogInformation("Created Category: {categoryName}", category.Name);
+                await categoryService.CreateCategory(new CreateCategoryDto { Name = "Some Category " + i, Description = "Description " + i}, CancellationToken.None);
             }
 
             if (!db.MaintenanceStatuses.Any())
