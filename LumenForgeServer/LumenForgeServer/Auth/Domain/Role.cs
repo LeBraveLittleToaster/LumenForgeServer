@@ -78,5 +78,8 @@ public enum Role
     InvoiceStatusCreate = 90,
     InvoiceStatusRead = 91,
     InvoiceStatusUpdate = 92,
-    InvoiceStatusDelete = 93
+    InvoiceStatusDelete = 93,
+    
+    // Roles
+    RoleRead = 100
 }

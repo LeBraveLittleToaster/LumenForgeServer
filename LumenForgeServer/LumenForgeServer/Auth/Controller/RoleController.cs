@@ -10,7 +10,6 @@ namespace LumenForgeServer.Auth.Controller;
 /// </summary>
 [Route("api/v1/auth/roles")]
 [ApiController]
-[Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
 public class RoleController : ControllerBase
 {
     /// <summary>
@@ -19,6 +18,7 @@ public class RoleController : ControllerBase
     /// <returns>A 200 response with the available roles.</returns>
     [HttpGet("")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = nameof(Role.RoleRead))]
     [Produces("application/json")]
     public IActionResult GetRoles()
     {

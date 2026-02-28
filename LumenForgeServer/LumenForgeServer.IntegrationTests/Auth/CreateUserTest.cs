@@ -19,6 +19,12 @@ namespace LumenForgeServer.IntegrationTests.Auth;
 public class CreateUserTest(AuthFixture fixture)
 {
     [Fact]
+    public async Task TESCHT()
+    {
+        await fixture.CreateNewUser();
+    }
+    
+    [Fact]
     public async Task POST_new_user_creates_user()
     {
         var testUser = TestUserInfo.CreateTestUserInfoWithGuid();

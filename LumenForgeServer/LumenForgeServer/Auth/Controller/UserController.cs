@@ -17,7 +17,7 @@ namespace LumenForgeServer.Auth.Controller;
 /// </remarks>
 [Route("api/v1/auth/users")]
 [ApiController]
-[Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+
 public class UserController(UserService userService, KcService kcService, ILogger<UserController> _logger) : ControllerBase
 {
     /// <summary>
@@ -32,6 +32,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpGet("")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
     [Produces("application/json")]
     public async Task<IActionResult> ListUsers([FromQuery] ListQueryDto query, CancellationToken ct)
     {
@@ -73,6 +74,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
     [Produces("application/json")]
     public async Task<IActionResult> GetUser(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
@@ -92,6 +94,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpGet("{userKcId}/groups")] 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
     [Produces("application/json")]
     public async Task<IActionResult> GetUserGroups(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
@@ -114,6 +117,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpDelete("{userKcId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
     [Produces("application/json")]
     public async Task<IActionResult> DeleteUserByKcId(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
@@ -133,6 +137,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpGet("{keycloakId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
     [Produces("application/json")]
     public async Task<IActionResult> GetUserRoles(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
