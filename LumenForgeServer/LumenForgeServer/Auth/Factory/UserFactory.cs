@@ -12,13 +12,13 @@ namespace LumenForgeServer.Auth.Factory;
 public static class UserFactory
 {
     /// <summary>
-    /// Builds a <see cref="User"/> instance from a user creation payload.
+    /// Builds a <see cref="KcUserReference"/> instance from a user creation payload.
     /// </summary>
     /// <param name="dto">Payload containing the Keycloak subject identifier.</param>
     /// <returns>A new user instance with joined timestamp set.</returns>
-    public static User BuildUser(string userKcId)
+    public static KcUserReference BuildUser(string userKcId)
     {
-        return new User
+        return new KcUserReference
         {
             JoinedAt = SystemClock.Instance.GetCurrentInstant(),
             UserKcId = userKcId

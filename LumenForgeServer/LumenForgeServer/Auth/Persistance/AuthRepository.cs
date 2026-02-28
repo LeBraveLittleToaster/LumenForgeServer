@@ -16,12 +16,12 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <summary>
     /// Adds a new user and immediately saves the change.
     /// </summary>
-    /// <param name="user">User entity to persist.</param>
+    /// <param name="kcUserReference">User entity to persist.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <exception cref="DbUpdateException">Thrown when persistence fails.</exception>
-    public async Task AddUserAsync(User user, CancellationToken ct)
+    public async Task AddUserAsync(KcUserReference kcUserReference, CancellationToken ct)
     {
-        await _db.Users.AddAsync(user, ct).AsTask();
+        await _db.Users.AddAsync(kcUserReference, ct).AsTask();
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The user if found; otherwise <c>null</c>.</returns>
-    public async Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
+    public async Task<KcUserReference?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         return await _db.Users
             .Where(u => u.UserKcId == keycloakId)
@@ -58,7 +58,7 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="offset">Number of records to skip.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>List of users.</returns>
-    public async Task<IReadOnlyList<User>> ListUsersAsync(string? search, int limit, int offset, CancellationToken ct)
+    public async Task<IReadOnlyList<KcUserReference>> ListUsersAsync(string? search, int limit, int offset, CancellationToken ct)
     {
         var query = _db.Users.AsQueryable();
 
@@ -83,7 +83,7 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <remarks>
     /// This query does not currently include navigation properties.
     /// </remarks>
-    public Task<User?> TryGetUserAndGroupsByKeycloakIdAsync(string keycloakId, CancellationToken ct)
+    public Task<KcUserReference?> TryGetUserAndGroupsByKeycloakIdAsync(string keycloakId, CancellationToken ct)
     {
         return _db.Users
             .Where(u => u.UserKcId == keycloakId)
@@ -230,13 +230,13 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// <param name="groupGuid">Group guid to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Users assigned to the group.</returns>
-    public async Task<IReadOnlyList<User>> GetUsersForGroupAsync(Guid groupGuid, CancellationToken ct)
+    public async Task<IReadOnlyList<KcUserReference>> GetUsersForGroupAsync(Guid groupGuid, CancellationToken ct)
     {
         var groupId = await GetGroupIdByGuidAsync(groupGuid, ct);
         return await _db.GroupUsers
             .AsNoTracking()
             .Where(gu => gu.GroupId == groupId)
-            .Select(gu => gu.User)
+            .Select(gu => gu.KcUserReference)
             .ToListAsync(ct);
     }
 
@@ -317,26 +317,26 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
     /// Removes a user from a group.
     /// </summary>
     /// <param name="group">Group to remove the user from.</param>
-    /// <param name="user">User to remove.</param>
+    /// <param name="kcUserReference">User to remove.</param>
     /// <param name="ct">Cancellation token.</param>
-    public Task RemoveUserFromGroupAsync(Group group, User user, CancellationToken ct)
+    public Task RemoveUserFromGroupAsync(Group group, KcUserReference kcUserReference, CancellationToken ct)
     {
         var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
-        var userId = user.Id != 0 ? user.Id : throw new NotFoundException("User not found");
+        var userId = kcUserReference.Id != 0 ? kcUserReference.Id : throw new NotFoundException("User not found");
         return RemoveGroupUserAsync(groupId, userId, ct);
     }
 
     /// <summary>
     /// Checks whether a user is a member of a group.
     /// </summary>
-    /// <param name="user">User to check.</param>
+    /// <param name="kcUserReference">User to check.</param>
     /// <param name="group">Group to check.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns><c>true</c> if the user is in the group; otherwise <c>false</c>.</returns>
-    public Task<bool> IsUserInGroupAsync(User user, Group group, CancellationToken ct)
+    public Task<bool> IsUserInGroupAsync(KcUserReference kcUserReference, Group group, CancellationToken ct)
     {
         var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("Group not found");
-        var userId = user.Id != 0 ? user.Id : throw new NotFoundException("User not found");
+        var userId = kcUserReference.Id != 0 ? kcUserReference.Id : throw new NotFoundException("User not found");
         return _db.GroupUsers
             .AsNoTracking()
             .AnyAsync(gu => gu.GroupId == groupId && gu.UserId == userId, ct);

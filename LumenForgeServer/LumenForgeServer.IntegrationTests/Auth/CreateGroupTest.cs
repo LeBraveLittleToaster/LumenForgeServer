@@ -6,9 +6,9 @@ using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
@@ -160,18 +160,11 @@ public class CreateGroupTest(AuthFixture fixture)
     public async Task POST_new_group_and_add_user()
     {
         var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
-        {
-            userKcId = kcClient.KcUserId
-        });
-
-        respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
         
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -196,7 +189,7 @@ public class CreateGroupTest(AuthFixture fixture)
 
     }
 
-    private static async Task<GroupView> CreateGroupAsync(KcClient kcClient)
+    private static async Task<GroupView> CreateGroupAsync(TestAppClient kcClient)
     {
         var guid = Guid.NewGuid();
         var groupName = "Test Group " + guid;

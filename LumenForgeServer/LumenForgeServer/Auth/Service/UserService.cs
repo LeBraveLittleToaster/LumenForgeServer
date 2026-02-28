@@ -11,7 +11,7 @@ namespace LumenForgeServer.Auth.Service;
 /// <summary>
 /// Application service for user-related auth operations.
 /// </summary>
-public class UserService(IAuthRepository authRepository) : ControllerBase
+public class UserService(IAuthRepository authRepository)
 {
     /// <summary>
     /// Retrieves a user by Keycloak subject identifier.
@@ -50,7 +50,7 @@ public class UserService(IAuthRepository authRepository) : ControllerBase
     /// <returns>The created user.</returns>
     /// <exception cref="ValidationException">Thrown when the payload fails validation.</exception>
     /// <exception cref="Microsoft.EntityFrameworkCore.DbUpdateException">Thrown when persistence fails.</exception>
-    public async Task<User?> AddUser(string userKcId, CancellationToken ct)
+    public async Task<KcUserReference?> AddUser(string userKcId, CancellationToken ct)
     {
         var user = UserFactory.BuildUser(userKcId);
 

@@ -20,9 +20,9 @@ public interface IAuthRepository
     /// <summary>
     /// Adds a user to the persistence store.
     /// </summary>
-    /// <param name="user">User entity to persist.</param>
+    /// <param name="kcUserReference">User entity to persist.</param>
     /// <param name="ct">Cancellation token.</param>
-    Task AddUserAsync(User user, CancellationToken ct);
+    Task AddUserAsync(KcUserReference kcUserReference, CancellationToken ct);
     /// <summary>
     /// Deletes a user by Keycloak subject identifier.
     /// </summary>
@@ -38,7 +38,7 @@ public interface IAuthRepository
     /// <param name="keycloakId">Keycloak subject identifier to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The user if found; otherwise <c>null</c>.</returns>
-    Task<User?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct);
+    Task<KcUserReference?> TryGetUserByKeycloakIdAsync(string keycloakId, CancellationToken ct);
     /// <summary>
     /// Lists users with optional paging and search.
     /// </summary>
@@ -47,7 +47,7 @@ public interface IAuthRepository
     /// <param name="offset">Number of records to skip.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>List of users.</returns>
-    Task<IReadOnlyList<User>> ListUsersAsync(string? search, int limit, int offset, CancellationToken ct);
+    Task<IReadOnlyList<KcUserReference>> ListUsersAsync(string? search, int limit, int offset, CancellationToken ct);
     /// <summary>
     /// Retrieves all roles assigned to a user via group memberships.
     /// </summary>
@@ -114,7 +114,7 @@ public interface IAuthRepository
     /// <param name="groupGuid">Group guid to look up.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Users assigned to the group.</returns>
-    Task<IReadOnlyList<User>> GetUsersForGroupAsync(Guid groupGuid, CancellationToken ct);
+    Task<IReadOnlyList<KcUserReference>> GetUsersForGroupAsync(Guid groupGuid, CancellationToken ct);
     /// <summary>
     /// Retrieves roles assigned to a group.
     /// </summary>
@@ -153,18 +153,18 @@ public interface IAuthRepository
     /// Removes a user from a group.
     /// </summary>
     /// <param name="group">Group to remove the user from.</param>
-    /// <param name="user">User to remove.</param>
+    /// <param name="kcUserReference">User to remove.</param>
     /// <param name="ct">Cancellation token.</param>
-    Task RemoveUserFromGroupAsync(Group group, User user, CancellationToken ct);
+    Task RemoveUserFromGroupAsync(Group group, KcUserReference kcUserReference, CancellationToken ct);
     
     /// <summary>
     /// Checks whether a user is a member of a group.
     /// </summary>
-    /// <param name="user">User to check.</param>
+    /// <param name="kcUserReference">User to check.</param>
     /// <param name="group">Group to check.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns><c>true</c> if the user is in the group; otherwise <c>false</c>.</returns>
-    Task<bool> IsUserInGroupAsync(User user, Group group, CancellationToken ct);
+    Task<bool> IsUserInGroupAsync(KcUserReference kcUserReference, Group group, CancellationToken ct);
     /// <summary>
     /// Checks whether a group has a specific role assigned.
     /// </summary>

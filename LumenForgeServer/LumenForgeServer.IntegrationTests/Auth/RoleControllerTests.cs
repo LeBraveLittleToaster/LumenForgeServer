@@ -4,9 +4,9 @@ using FluentAssertions;
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 

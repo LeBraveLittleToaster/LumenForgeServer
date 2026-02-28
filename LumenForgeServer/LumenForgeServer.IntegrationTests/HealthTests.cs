@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
 using System.Net;
 using System.Net.Http.Json;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests;
 

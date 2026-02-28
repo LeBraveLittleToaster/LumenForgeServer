@@ -26,7 +26,7 @@ public record UserView
     [JsonPropertyName("group_users")]
     public List<GroupUser> GroupUsers { get; private set; } = [];
 
-    public static UserView FromEntity(User tEntity)
+    public static UserView FromEntity(KcUserReference tEntity)
     {
         return new UserView
         {

@@ -7,9 +7,9 @@ using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
@@ -174,23 +174,12 @@ public class AssignUsersToGroupTests(AuthFixture fixture)
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    private static async Task<KcClient> CreateKcUserAndLocalUserAsync(AuthFixture fixture)
+    private static Task<TestAppClient> CreateKcUserAndLocalUserAsync(AuthFixture fixture)
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-
-        var respDelete = await kcClient.AppApiClient.DeleteAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
-        respDelete.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
-
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
-        {
-            userKcId = kcClient.KcUserId
-        });
-
-        respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
-        return kcClient;
+        return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
     }
 
-    private static async Task<GroupView> CreateGroupAsync(KcClient kcClient)
+    private static async Task<GroupView> CreateGroupAsync(TestAppClient kcClient)
     {
         var guid = Guid.NewGuid();
         var groupName = "Test Group " + guid;

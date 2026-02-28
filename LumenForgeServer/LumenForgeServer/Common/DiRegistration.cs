@@ -35,6 +35,7 @@ public static class DiRegistration
         });
     }
 
+    
     /// <summary>
     /// Registers the in-memory cache.
     /// </summary>
@@ -60,6 +61,7 @@ public static class DiRegistration
     /// <param name="builder">Application builder that owns the service collection.</param>
     public static void RegisterServices(WebApplicationBuilder builder)
     {
+        builder.Services.AddSingleton<KcService>();
         builder.Services.AddScoped<GroupService>();
         builder.Services.AddScoped<CategoryService>();
         builder.Services.AddScoped<VendorService>();

@@ -19,7 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     /// <summary>
     /// Auth users keyed by Keycloak subject id.
     /// </summary>
-    public DbSet<User> Users => Set<User>();
+    public DbSet<KcUserReference> Users => Set<KcUserReference>();
     /// <summary>
     /// Auth groups used to assign roles to users.
     /// </summary>
@@ -511,18 +511,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     /// <param name="builder">Model builder used to configure entity mappings.</param>
     private static void AddAuthModuleTableDef(ModelBuilder builder)
     {
-        builder.Entity<User>().ToTable("users");
+        builder.Entity<KcUserReference>().ToTable("users");
         builder.Entity<Group>().ToTable("groups");
         builder.Entity<GroupRole>().ToTable("group_roles");
         builder.Entity<GroupUser>().ToTable("group_users");
 
-        builder.Entity<User>(e =>
+        builder.Entity<KcUserReference>(e =>
         {
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.UserKcId).IsUnique();
             
             e.HasMany(x => x.GroupUsers)
-                .WithOne(x => x.User)
+                .WithOne(x => x.KcUserReference)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });

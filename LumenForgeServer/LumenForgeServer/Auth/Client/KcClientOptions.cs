@@ -3,7 +3,7 @@
 /// <summary>
 /// Configuration settings used by Keycloak-aware integration test clients.
 /// </summary>
-public class KcOptions
+public class KcClientOptions
 {
     public string KcAdminPass { get; init; }
     public string KcAdminUser { get; init; }
@@ -18,19 +18,18 @@ public class KcOptions
     
     public string AppBaseUrl { get; init; }
 
-    private KcOptions()
+    private KcClientOptions()
     {
     }
 
-    public static KcOptions FromEnvironment()
+    public static KcClientOptions FromEnvironment()
     {
-        return new KcOptions
+        return new KcClientOptions
         {
-            AppBaseUrl = Environment.GetEnvironmentVariable("APP_BASEURL") ?? "https://localhost:7217",
-            
+           
             KcBaseUrl = Environment.GetEnvironmentVariable("KC_BASEURL") ?? "http://localhost:8080",
             KcRealm = Environment.GetEnvironmentVariable("KC_REALM") ?? "lumenforge-realm",
-            KcClientId = Environment.GetEnvironmentVariable("KC_CLIENTID") ?? "lumenforge-test",
+            KcClientId = Environment.GetEnvironmentVariable("KC_CLIENTID") ?? "admin-cli",
             
             KcAdminRealm = Environment.GetEnvironmentVariable("KC_ADMIN_REALM") ?? "master",
             KcAdminUser = Environment.GetEnvironmentVariable("KC_ADMIN_USER") ?? "admin",

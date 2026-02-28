@@ -5,7 +5,7 @@ namespace LumenForgeServer.Auth.Domain;
 /// <summary>
 /// Represents an authenticated user in the system.
 /// </summary>
-public class User
+public class KcUserReference
 {
     /// <summary>
     /// Internal database identifier.

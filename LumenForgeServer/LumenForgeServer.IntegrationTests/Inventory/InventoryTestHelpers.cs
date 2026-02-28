@@ -3,8 +3,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using LumenForgeServer.Common;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.View;
 
@@ -19,16 +19,16 @@ internal static class InventoryTestHelpers
     {
         return new HttpClient
         {
-            BaseAddress = new Uri(fixture._kcOptions.AppBaseUrl)
+            BaseAddress = new Uri(fixture.Options.AppBaseUrl)
         };
     }
 
-    public static Task<KcClient> CreateAdminClientAsync(AuthFixture fixture)
+    public static Task<TestAppClient> CreateAdminClientAsync(AuthFixture fixture)
     {
         return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
     }
 
-    public static Task<KcClient> CreateNonAdminClientAsync(AuthFixture fixture)
+    public static Task<TestAppClient> CreateNonAdminClientAsync(AuthFixture fixture)
     {
         var guid = Guid.NewGuid().ToString("N");
         return fixture.CreateNewTestUserClientAsync(new TestUserInfo(
@@ -41,7 +41,7 @@ internal static class InventoryTestHelpers
             RealmRoles: []), CancellationToken.None);
     }
 
-    public static async Task<CategoryView> CreateCategoryAsync(KcClient kcClient, string? name = null)
+    public static async Task<CategoryView> CreateCategoryAsync(TestAppClient kcClient, string? name = null)
     {
         var categoryName = name ?? $"Category-{Guid.NewGuid()}";
         var response = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
@@ -54,7 +54,7 @@ internal static class InventoryTestHelpers
         return await DeserializeResponseAsync<CategoryView>(response);
     }
 
-    public static async Task<VendorView> CreateVendorAsync(KcClient kcClient, string? name = null)
+    public static async Task<VendorView> CreateVendorAsync(TestAppClient kcClient, string? name = null)
     {
         var vendorName = name ?? $"Vendor-{Guid.NewGuid()}";
         var response = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
@@ -67,7 +67,7 @@ internal static class InventoryTestHelpers
     }
 
     public static async Task<DeviceView> CreateDeviceAsync(
-        KcClient kcClient,
+        TestAppClient kcClient,
         Guid vendorGuid,
         IReadOnlyCollection<Guid>? categoryGuids = null,
         string? serialNumber = null)

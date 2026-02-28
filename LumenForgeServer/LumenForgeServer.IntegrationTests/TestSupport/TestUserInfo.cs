@@ -1,4 +1,6 @@
-namespace LumenForgeServer.IntegrationTests.Client;
+using LumenForgeServer.Auth.Dto.Command;
+
+namespace LumenForgeServer.IntegrationTests.TestSupport;
 
 /// <summary>
 /// Immutable test user payload used to provision Keycloak identities.
@@ -13,6 +15,20 @@ public record TestUserInfo(
     string[] RealmRoles
 )
 {
+    public AddKcUserDto ToAddKcUserDto()
+    {
+        return new AddKcUserDto
+        {
+            Username = Username,
+            Password = Password,
+            Email = Email,
+            FirstName = FirstName,
+            LastName = LastName,
+            Groups = Groups,
+            RealmRoles = RealmRoles
+        };
+    }
+
     public static TestUserInfo CreateTestUserInfoWithGuid()
     {
         var guid = Guid.NewGuid().ToString();

@@ -6,9 +6,9 @@ using LumenForgeServer.Auth.Dto;
 using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
 
@@ -21,27 +21,16 @@ public class CreateUserTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_user_creates_user()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-
-        var respDelete = await kcClient.AppApiClient.DeleteAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
-
-        respDelete.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
-
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
-        {
-            userKcId = kcClient.KcUserId
-        });
-
-        respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
+        var testUser = TestUserInfo.CreateTestUserInfoWithGuid();
+        var kcClient = await fixture.CreateNewTestUserClientAsync(testUser, CancellationToken.None);
 
         var userFromDb = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
         userFromDb.StatusCode.Should().Be(HttpStatusCode.OK);
         userFromDb.Content.Should().NotBeNull();
 
-        var respPutTheSameClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/users", new AddUserDto
-        {
-            userKcId = kcClient.KcUserId
-        });
+        var respPutTheSameClient = await kcClient.AppApiClient.PutAsJsonAsync(
+            "/api/v1/auth/users",
+            testUser.ToAddKcUserDto());
 
         respPutTheSameClient.StatusCode.Should().Be(HttpStatusCode.Conflict);
 

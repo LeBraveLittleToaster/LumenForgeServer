@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using LumenForgeServer.Auth.Dto.Command;
+using LumenForgeServer.Common.Exceptions;
 
 namespace LumenForgeServer.Auth.Controller;
 
@@ -16,8 +17,8 @@ namespace LumenForgeServer.Auth.Controller;
 /// </remarks>
 [Route("api/v1/auth/users")]
 [ApiController]
-[Authorize(Roles = "REALM_ADMIN")]
-public class UserController(UserService userService) : ControllerBase
+[Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+public class UserController(UserService userService, KcService kcService, ILogger<UserController> _logger) : ControllerBase
 {
     /// <summary>
     /// Lists local users with optional paging and search.
@@ -41,22 +42,24 @@ public class UserController(UserService userService) : ControllerBase
     /// <summary>
     /// Creates a user record for a Keycloak subject identifier.
     /// </summary>
-    /// <param name="addUserDto">Payload containing the Keycloak subject identifier.</param>
+    /// <param name="addKcUserDto">Payload containing the user information to create a new user.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 201 response with the created user payload.</returns>
     [HttpPut("")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [Produces("application/json")]
     
-    public async Task<IActionResult> AddUser([FromBody] AddUserDto addUserDto, CancellationToken ct)
+    public async Task<IActionResult> RegisterNewUser([FromBody] AddKcUserDto addKcUserDto, CancellationToken ct)
     {
-        var user = await userService.AddUser(addUserDto.userKcId, ct);
+        var userKcId = await kcService.AddUserToKeycloak(addKcUserDto, ct);
+        if(userKcId == null) throw new KeycloakException("User Id was not found");
         
+        var user = await userService.AddUser(userKcId, ct);
         return CreatedAtAction(nameof(GetUser), new { userKcId = user?.UserKcId }, user);
     }
-
+    
     /// <summary>
     /// Retrieves a user by Keycloak subject identifier.
     /// </summary>
