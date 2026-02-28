@@ -19,9 +19,8 @@ public class RoleControllerTests(AuthFixture fixture)
     [Fact]
     public async Task GET_roles_returns_catalog()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
 
-        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/auth/roles");
+        var resp = await fixture.AdminClient!.AdminClient.GetAsync("/api/v1/auth/roles");
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var roles = JsonSerializer.Deserialize<List<RoleViewDto>>(await resp.Content.ReadAsStringAsync(), Json.GetJsonSerializerOptions());

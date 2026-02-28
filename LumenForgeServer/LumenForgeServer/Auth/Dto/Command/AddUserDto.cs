@@ -47,5 +47,6 @@ public record AddKcUserDto
 
     public string[] Groups { get; init; } = [];
     public string[] RealmRoles { get; init; } = [];
+    
 }
     

@@ -1,3 +1,6 @@
+using LumenForgeServer.Auth.Dto.Command;
+using LumenForgeServer.Auth.Service;
+using LumenForgeServer.Common.Exceptions;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Domain;
 using LumenForgeServer.Inventory.Service;
@@ -10,6 +13,16 @@ namespace LumenForgeServer.Common.Database;
 /// </summary>
 public static class DevDbSeeder
 {
+    public static AddKcUserDto TEST_ADMIN_USER = new AddKcUserDto
+    {
+        Username = "InitialAdminuser",
+        Password = "admin",
+        Email = "admin@admin.de",
+        FirstName = "Initial",
+        LastName = "Admin",
+        RealmRoles = ["REALM_ADMIN", "REALM_OWNER"]
+    };
+    public static string? TEST_ADMIN_USER_KC_ID = null;
     /// <summary>
     /// Deletes the database, recreates it, and inserts minimal seed data.
     /// </summary>
@@ -36,6 +49,10 @@ public static class DevDbSeeder
         var db = scope.ServiceProvider
             .GetRequiredService<AppDbContext>();
 
+        var kcService = scope.ServiceProvider.GetRequiredService<KcService>();
+        var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+        
+
         var vendorService = scope.ServiceProvider.GetRequiredService<VendorService>();
         var categoryService = scope.ServiceProvider.GetRequiredService<CategoryService>();
 
@@ -51,7 +68,20 @@ public static class DevDbSeeder
 
             logger.LogInformation("Seeding dummy data...");
 
-
+            await kcService.DeleteUsersFromKeycloakByUsernamePrefix("test", CancellationToken.None);
+            
+            try
+            {
+                TEST_ADMIN_USER_KC_ID = await kcService.AddUserToKeycloak(TEST_ADMIN_USER, CancellationToken.None);
+            }
+            catch (UniqueConstraintException e)
+            {
+                await kcService.DeleteUserFromKeycloakByUsername(TEST_ADMIN_USER.Username, CancellationToken.None);
+                TEST_ADMIN_USER_KC_ID = await kcService.AddUserToKeycloak(TEST_ADMIN_USER, CancellationToken.None);
+            }
+            
+            await userService.AddUser(TEST_ADMIN_USER_KC_ID, CancellationToken.None);
+            
             await vendorService.CreateVendor(new CreateVendorDto { Name = "Some Cool Vendor" }, CancellationToken.None);
 
             for (var i = 0; i < 10; i++)

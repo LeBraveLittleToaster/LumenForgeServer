@@ -176,7 +176,7 @@ public class AssignUsersToGroupTests(AuthFixture fixture)
 
     private static Task<TestAppClient> CreateKcUserAndLocalUserAsync(AuthFixture fixture)
     {
-        return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        return null;
     }
 
     private static async Task<GroupView> CreateGroupAsync(TestAppClient kcClient)

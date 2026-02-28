@@ -13,7 +13,7 @@ public class KcService
 {
     private KcClient? _kcClient;
     private readonly KcClientOptions _kcOptions = KcClientOptions.FromEnvironment();
-    private readonly SemaphoreSlim _lock = new(1,1);
+    private readonly SemaphoreSlim _lock = new(1, 1);
 
     private async Task EnsureInitializedAsync()
     {
@@ -36,7 +36,7 @@ public class KcService
     public async Task<string> AddUserToKeycloak(AddKcUserDto dto, CancellationToken ct)
     {
         await EnsureInitializedAsync();
-        
+
         var newUser = new
         {
             username = dto.Username,
@@ -52,8 +52,9 @@ public class KcService
                 new { type = "password", value = dto.Password, temporary = false }
             }
         };
-        
-        var response = await _kcClient!.AdminClient.PostAsJsonAsync($"/admin/realms/{_kcOptions.KcRealm}/users", newUser, ct);
+
+        var response =
+            await _kcClient!.AdminClient.PostAsJsonAsync($"/admin/realms/{_kcOptions.KcRealm}/users", newUser, ct);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -72,5 +73,139 @@ public class KcService
         var userId = location.Split('/').Last();
 
         return userId;
+    }
+
+    public async Task DeleteUserFromKeycloakByUsername(string username, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+            throw new ArgumentException("Username must be provided.", nameof(username));
+
+        await EnsureInitializedAsync();
+
+        var lookupResponse = await _kcClient!.AdminClient.GetAsync(
+            $"/admin/realms/{_kcOptions.KcRealm}/users?username={Uri.EscapeDataString(username)}&exact=true",
+            ct);
+
+        if (!lookupResponse.IsSuccessStatusCode)
+        {
+            var body = await lookupResponse.Content.ReadAsStringAsync(ct);
+            throw new KeycloakException(
+                $"Failed to lookup user '{username}': Http {(int)lookupResponse.StatusCode} {body}");
+        }
+
+        var content = await lookupResponse.Content.ReadAsStringAsync(ct);
+
+        using var document = JsonDocument.Parse(content);
+        var root = document.RootElement;
+
+        if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() == 0)
+            throw new KeycloakException($"User '{username}' not found in Keycloak.");
+
+        if (root.GetArrayLength() > 1)
+            throw new KeycloakException($"Multiple users found for username '{username}'. Expected exactly one.");
+
+        var userElement = root[0];
+
+        if (!userElement.TryGetProperty("id", out var idElement) ||
+            idElement.ValueKind != JsonValueKind.String)
+            throw new KeycloakException($"User '{username}' found but id property missing.");
+
+        var userId = idElement.GetString();
+
+        var deleteResponse = await _kcClient.AdminClient.DeleteAsync(
+            $"/admin/realms/{_kcOptions.KcRealm}/users/{userId}",
+            ct);
+
+        if (deleteResponse.IsSuccessStatusCode)
+            return;
+
+        var deleteBody = await deleteResponse.Content.ReadAsStringAsync(ct);
+
+        throw new KeycloakException(
+            $"Failed to delete user '{username}' (id: {userId}): Http {(int)deleteResponse.StatusCode} {deleteBody}");
+    }
+
+    public async Task<int> DeleteUsersFromKeycloakByUsernamePrefix(string usernamePrefix, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(usernamePrefix))
+            throw new ArgumentException("Prefix must be provided.", nameof(usernamePrefix));
+
+        await EnsureInitializedAsync();
+
+        var search = usernamePrefix.EndsWith('*') ? usernamePrefix[..^1] : usernamePrefix;
+
+        const int pageSize = 100;
+        var first = 0;
+        var deleted = 0;
+
+        while (true)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var url =
+                $"/admin/realms/{_kcOptions.KcRealm}/users" +
+                $"?search={Uri.EscapeDataString(search)}" +
+                $"&first={first}" +
+                $"&max={pageSize}";
+
+            var lookupResponse = await _kcClient!.AdminClient.GetAsync(url, ct);
+            if (!lookupResponse.IsSuccessStatusCode)
+            {
+                var body = await lookupResponse.Content.ReadAsStringAsync(ct);
+                throw new KeycloakException(
+                    $"Failed to query users for '{usernamePrefix}': Http {(int)lookupResponse.StatusCode} {body}");
+            }
+
+            var json = await lookupResponse.Content.ReadAsStringAsync(ct);
+            using var doc = JsonDocument.Parse(json);
+
+            if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                throw new KeycloakException("Unexpected Keycloak response: expected JSON array.");
+
+            var users = doc.RootElement;
+            var count = users.GetArrayLength();
+            if (count == 0)
+                break;
+
+            for (var i = 0; i < count; i++)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                var user = users[i];
+
+                if (!user.TryGetProperty("id", out var idEl) || idEl.ValueKind != JsonValueKind.String)
+                    continue;
+
+                if (!user.TryGetProperty("username", out var unEl) || unEl.ValueKind != JsonValueKind.String)
+                    continue;
+
+                var username = unEl.GetString() ?? string.Empty;
+                if (!username.StartsWith(search, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var userId = idEl.GetString()!;
+                var deleteResponse = await _kcClient.AdminClient.DeleteAsync(
+                    $"/admin/realms/{_kcOptions.KcRealm}/users/{userId}",
+                    ct);
+
+                if (deleteResponse.IsSuccessStatusCode)
+                {
+                    deleted++;
+                    continue;
+                }
+
+                var deleteBody = await deleteResponse.Content.ReadAsStringAsync(ct);
+
+                if (deleteResponse.StatusCode == HttpStatusCode.NotFound)
+                    continue;
+
+                throw new KeycloakException(
+                    $"Failed to delete user '{username}' (id: {userId}): Http {(int)deleteResponse.StatusCode} {deleteBody}");
+            }
+
+            first += pageSize;
+        }
+
+        return deleted;
     }
 }

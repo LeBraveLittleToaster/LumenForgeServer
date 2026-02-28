@@ -21,11 +21,9 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task GET_groups_supports_search_and_paging()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        var group = await CreateGroupAsync(null);
 
-        var group = await CreateGroupAsync(kcClient);
-
-        var resp = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/groups?search={Uri.EscapeDataString(group.Name)}&limit=10&offset=0");
+        var resp = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/groups?search={Uri.EscapeDataString(group.Name)}&limit=10&offset=0");
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var groups = JsonSerializer.Deserialize<List<GroupView>>(await resp.Content.ReadAsStringAsync(), Json.GetJsonSerializerOptions());
@@ -36,9 +34,8 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task GET_groups_invalid_limit_returns_bad_request()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
 
-        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/auth/groups?limit=0&offset=0");
+        var resp = await fixture.AdminClient.AdminClient.GetAsync("/api/v1/auth/groups?limit=0&offset=0");
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -46,12 +43,11 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_group_creates_user()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
         
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -59,7 +55,7 @@ public class CreateGroupTest(AuthFixture fixture)
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
         
-        respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        respPutClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -71,12 +67,12 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_group_query_and_delete()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        
         
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -87,20 +83,20 @@ public class CreateGroupTest(AuthFixture fixture)
         var groupView = await JsonSerializer.DeserializeAsync<GroupView>(await respPutClient.Content.ReadAsStreamAsync(), Json.GetJsonSerializerOptions());
         groupView.Should().NotBeNull();
 
-        respPutClient = await kcClient.AppApiClient.DeleteAsync($"/api/v1/auth/groups/{groupView!.Guid}");
+        respPutClient = await fixture.AdminClient.AdminClient.DeleteAsync($"/api/v1/auth/groups/{groupView!.Guid}");
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var respGroupQuery = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/groups/{groupView.Guid}");
+        var respGroupQuery = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/groups/{groupView.Guid}");
         respGroupQuery.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task POST_group_invalid_payload_returns_bad_request()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        
 
-        var respMissingName = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
+        var respMissingName = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
         {
             Name = " ",
             Description = "Valid description with enough length"
@@ -108,7 +104,7 @@ public class CreateGroupTest(AuthFixture fixture)
 
         respMissingName.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
-        var respShortDesc = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
+        var respShortDesc = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
         {
             Name = "Valid Name " + Guid.NewGuid(),
             Description = "short"
@@ -120,10 +116,10 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task PATCH_group_updates_fields()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-        var group = await CreateGroupAsync(kcClient);
+        
+        var group = await CreateGroupAsync(null);
 
-        var updateResp = await kcClient.AppApiClient.PatchAsJsonAsync($"/api/v1/auth/groups/{group.Guid}", new UpdateGroupDto
+        var updateResp = await fixture.AdminClient.AdminClient.PatchAsJsonAsync($"/api/v1/auth/groups/{group.Guid}", new UpdateGroupDto
         {
             Name = "Updated Name " + Guid.NewGuid(),
             Description = "Updated Description " + Guid.NewGuid() + " extended"
@@ -140,31 +136,29 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task PATCH_group_empty_body_returns_bad_request()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-        var group = await CreateGroupAsync(kcClient);
+        
+        var group = await CreateGroupAsync(null);
 
-        var updateResp = await kcClient.AppApiClient.PatchAsJsonAsync($"/api/v1/auth/groups/{group.Guid}", new UpdateGroupDto());
+        var updateResp = await fixture.AdminClient.AdminClient.PatchAsJsonAsync($"/api/v1/auth/groups/{group.Guid}", new UpdateGroupDto());
         updateResp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task GET_group_invalid_guid_returns_not_found()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-
-        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/auth/groups/not-a-guid");
+        var resp = await fixture.AdminClient.AdminClient.GetAsync("/api/v1/auth/groups/not-a-guid");
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task POST_new_group_and_add_user()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        
         
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,
@@ -175,27 +169,27 @@ public class CreateGroupTest(AuthFixture fixture)
 
         respPutClient.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var groupGet = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/groups/{groupView.Guid}");
+        var groupGet = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/groups/{groupView.Guid}");
         groupGet.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
+        await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{" "}");
 
-        var respAssignUser = await kcClient.AppApiClient.PutAsJsonAsync($"/api/v1/auth/groups/{groupView.Guid}/users", new AssignUserToGroupDto
+        var respAssignUser = await fixture.AdminClient.AdminClient.PutAsJsonAsync($"/api/v1/auth/groups/{groupView.Guid}/users", new AssignUserToGroupDto
         {
-            userKcId = kcClient.KcUserId
+            userKcId = " "
         });
 
         respAssignUser.StatusCode.Should().Be(HttpStatusCode.OK);
 
     }
 
-    private static async Task<GroupView> CreateGroupAsync(TestAppClient kcClient)
+    private  async Task<GroupView> CreateGroupAsync(TestAppClient kcClient)
     {
         var guid = Guid.NewGuid();
         var groupName = "Test Group " + guid;
         var groupDesc = "Test Group Description " + guid + " Extended";
 
-        var respPutClient = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
+        var respPutClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto()
         {
             Name = groupName,
             Description = groupDesc,

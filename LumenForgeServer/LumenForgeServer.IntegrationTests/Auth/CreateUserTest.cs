@@ -22,19 +22,19 @@ public class CreateUserTest(AuthFixture fixture)
     public async Task POST_new_user_creates_user()
     {
         var testUser = TestUserInfo.CreateTestUserInfoWithGuid();
-        var kcClient = await fixture.CreateNewTestUserClientAsync(testUser, CancellationToken.None);
+        
 
-        var userFromDb = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
+        var userFromDb = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{testUser.Username}");
         userFromDb.StatusCode.Should().Be(HttpStatusCode.OK);
         userFromDb.Content.Should().NotBeNull();
 
-        var respPutTheSameClient = await kcClient.AppApiClient.PutAsJsonAsync(
+        var respPutTheSameClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync(
             "/api/v1/auth/users",
             testUser.ToAddKcUserDto());
 
         respPutTheSameClient.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var getClient = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
+        var getClient = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{testUser.Username}");
         getClient.StatusCode.Should().Be(HttpStatusCode.OK);
         getClient.Content.Should().NotBeNull();
         var contentStr = await getClient.Content.ReadAsStringAsync();

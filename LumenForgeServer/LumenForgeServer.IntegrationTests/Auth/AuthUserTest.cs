@@ -47,10 +47,7 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task POST_user_invalid_payload_returns_bad_request()
     {
-        using var client = new HttpClient
-        {
-            BaseAddress = new Uri(fixture.Options.AppBaseUrl)
-        };
+        using var client = new HttpClient();
 
         var resp = await client.PutAsJsonAsync("/api/v1/auth/users", new AddKcUserDto
         {
@@ -83,9 +80,7 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_user_not_found_returns_not_found()
     {
-        var kcClient = await fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-
-        var resp = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{Guid.NewGuid()}");
+        var resp = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{Guid.NewGuid()}");
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -103,6 +98,6 @@ public class AuthUserTest(AuthFixture fixture)
 
     private static Task<TestAppClient> CreateKcUserAndLocalUserAsync(AuthFixture fixture)
     {
-        return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        return null;
     }
 }

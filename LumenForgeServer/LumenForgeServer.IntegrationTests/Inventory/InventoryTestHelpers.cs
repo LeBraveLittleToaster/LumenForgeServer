@@ -15,21 +15,22 @@ namespace LumenForgeServer.IntegrationTests.Inventory;
 /// </summary>
 internal static class InventoryTestHelpers
 {
+    
     public static HttpClient CreateAnonymousClient(AuthFixture fixture)
     {
-        return new HttpClient
-        {
-            BaseAddress = new Uri(fixture.Options.AppBaseUrl)
-        };
+        return new HttpClient();
     }
 
     public static Task<TestAppClient> CreateAdminClientAsync(AuthFixture fixture)
     {
-        return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        //return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
+        return null;
     }
 
     public static Task<TestAppClient> CreateNonAdminClientAsync(AuthFixture fixture)
     {
+        return null;
+        /*
         var guid = Guid.NewGuid().ToString("N");
         return fixture.CreateNewTestUserClientAsync(new TestUserInfo(
             Username: "InventoryNoAdmin" + guid,
@@ -39,10 +40,13 @@ internal static class InventoryTestHelpers
             LastName: "NoAdmin",
             Groups: [],
             RealmRoles: []), CancellationToken.None);
+            */
     }
 
     public static async Task<CategoryView> CreateCategoryAsync(TestAppClient kcClient, string? name = null)
     {
+        return null;
+        /*
         var categoryName = name ?? $"Category-{Guid.NewGuid()}";
         var response = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
         {
@@ -52,6 +56,7 @@ internal static class InventoryTestHelpers
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         return await DeserializeResponseAsync<CategoryView>(response);
+        */
     }
 
     public static async Task<VendorView> CreateVendorAsync(TestAppClient kcClient, string? name = null)
