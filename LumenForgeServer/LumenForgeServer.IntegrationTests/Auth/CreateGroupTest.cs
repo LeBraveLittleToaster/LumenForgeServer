@@ -1,3 +1,4 @@
+// CreateGroupTest.cs
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -22,16 +23,18 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task GET_groups_supports_search_and_paging()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
         var group = await CreateGroupAsync(adminBundle.AppClient);
 
-        var resp = await adminBundle.AppClient.GetAsync($"/api/v1/auth/groups?search={Uri.EscapeDataString(group.Name)}&limit=10&offset=0");
+        var resp = await adminBundle.AppClient.GetAsync(
+            $"/api/v1/auth/groups?search={Uri.EscapeDataString(group.Name)}&limit=10&offset=0");
+
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var groups = JsonSerializer.Deserialize<List<GroupView>>(
             await resp.Content.ReadAsStringAsync(),
             Json.GetJsonSerializerOptions());
+
         groups.Should().NotBeNull();
         groups.Should().Contain(g => g.Guid == group.Guid);
     }
@@ -53,6 +56,7 @@ public class CreateGroupTest(AuthFixture fixture)
         var groupView = await JsonSerializer.DeserializeAsync<GroupView>(
             await response.Content.ReadAsStreamAsync(),
             Json.GetJsonSerializerOptions());
+
         groupView.Should().NotBeNull();
         return groupView!;
     }
@@ -60,8 +64,7 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task GET_groups_invalid_limit_returns_bad_request()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
 
         var resp = await adminBundle.AppClient.GetAsync("/api/v1/auth/groups?limit=0&offset=0");
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -70,12 +73,12 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_group_creates_user()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
 
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
+
         var respPutClient = await adminBundle.AppClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
         {
             Name = groupName,
@@ -98,12 +101,12 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_group_query_and_delete()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
 
         var guid = Guid.NewGuid();
         var groupName = "My Test Name" + guid;
         var groupDesc = "My Test Description,My Test Description,My Test Description" + guid;
+
         var respPutClient = await adminBundle.AppClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
         {
             Name = groupName,
@@ -116,6 +119,7 @@ public class CreateGroupTest(AuthFixture fixture)
         var groupView = await JsonSerializer.DeserializeAsync<GroupView>(
             await respPutClient.Content.ReadAsStreamAsync(),
             Json.GetJsonSerializerOptions());
+
         groupView.Should().NotBeNull();
 
         respPutClient = await adminBundle.AppClient.DeleteAsync($"/api/v1/auth/groups/{groupView!.Guid}");
@@ -128,8 +132,7 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_group_invalid_payload_returns_bad_request()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
 
         var respMissingName = await adminBundle.AppClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
         {
@@ -153,8 +156,7 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task PATCH_group_updates_fields()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
         var group = await CreateGroupAsync(adminBundle.AppClient);
 
         var updateResp = await adminBundle.AppClient.PatchAsJsonAsync($"/api/v1/auth/groups/{group.Guid}", new UpdateGroupDto
@@ -168,6 +170,7 @@ public class CreateGroupTest(AuthFixture fixture)
         var updated = JsonSerializer.Deserialize<GroupView>(
             await updateResp.Content.ReadAsStringAsync(),
             Json.GetJsonSerializerOptions());
+
         updated.Should().NotBeNull();
         updated!.Name.Should().StartWith("Updated Name");
         updated.Description.Should().StartWith("Updated Description");
@@ -176,19 +179,20 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task PATCH_group_empty_body_returns_bad_request()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
         var group = await CreateGroupAsync(adminBundle.AppClient);
 
-        var updateResp = await adminBundle.AppClient.PatchAsJsonAsync($"/api/v1/auth/groups/{group.Guid}", new UpdateGroupDto());
+        var updateResp = await adminBundle.AppClient.PatchAsJsonAsync(
+            $"/api/v1/auth/groups/{group.Guid}",
+            new UpdateGroupDto());
+
         updateResp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
     public async Task GET_group_invalid_guid_returns_not_found()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
 
         var resp = await adminBundle.AppClient.GetAsync("/api/v1/auth/groups/not-a-guid");
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -197,9 +201,8 @@ public class CreateGroupTest(AuthFixture fixture)
     [Fact]
     public async Task POST_new_group_and_add_user()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
-        var userBundle = await CreateNewUserAsync(fixture, options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
+        var userBundle = await CreateNewUserAsync(fixture);
 
         var group = await CreateGroupAsync(adminBundle.AppClient);
 
@@ -215,10 +218,9 @@ public class CreateGroupTest(AuthFixture fixture)
         respAssignUser.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
-
-    private static Task<TestUserBundle> CreateNewUserAsync(AuthFixture fixture, KcAndAppClientOptions options)
+    private static Task<TestUserBundle> CreateNewUserAsync(AuthFixture fixture)
     {
         var dto = CreateTestUserDto.CreateTestUser();
-        return fixture.CreateNewUserAsync(options, dto);
+        return fixture.CreateNewUserAsync(dto);
     }
 }

@@ -1,8 +1,8 @@
+// DeviceEndpointsTests.cs
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using LumenForgeServer.Common;
-using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
 using LumenForgeServer.Inventory.Dto.Create;
@@ -30,7 +30,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_creates_with_vendor_categories_stock_and_parameters()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var categoryA = await InventoryTestHelpers.CreateCategoryAsync(admin);
         var categoryB = await InventoryTestHelpers.CreateCategoryAsync(admin);
@@ -55,7 +55,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_with_unknown_vendor_returns_not_found()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
 
         var response = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/devices", new CreateDeviceDto
         {
@@ -80,7 +80,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_with_unknown_category_returns_not_found()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
 
         var response = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/devices", new CreateDeviceDto
@@ -106,7 +106,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_invalid_payload_returns_bad_request()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
 
         var response = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/devices", new CreateDeviceDto
@@ -132,14 +132,16 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_devices_supports_search_and_paging()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var serial = "LOOKUP-" + Guid.NewGuid();
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid, serialNumber: serial);
 
-        var response = await admin.AppClient.GetAsync($"/api/v1/inventory/devices?search={Uri.EscapeDataString(serial)}&limit=10&offset=0");
+        var response = await admin.AppClient.GetAsync(
+            $"/api/v1/inventory/devices?search={Uri.EscapeDataString(serial)}&limit=10&offset=0");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var listed = await InventoryTestHelpers.DeserializeResponseAsync<List<DeviceView>>(response);
         listed.Should().Contain(d => d.Guid == device.Guid);
     }
@@ -147,7 +149,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_devices_invalid_limit_returns_bad_request()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
 
         var response = await admin.AppClient.GetAsync("/api/v1/inventory/devices?limit=0&offset=0");
 
@@ -157,7 +159,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_device_not_found_returns_not_found()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
 
         var response = await admin.AppClient.GetAsync($"/api/v1/inventory/devices/{Guid.NewGuid()}");
 
@@ -167,7 +169,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PATCH_device_updates_fields_and_vendor()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendorA = await InventoryTestHelpers.CreateVendorAsync(admin);
         var vendorB = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendorA.Guid);
@@ -184,6 +186,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
         });
 
         patchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var updated = await InventoryTestHelpers.DeserializeResponseAsync<DeviceView>(patchResponse);
         updated.Vendor.Guid.Should().Be(vendorB.Guid);
         updated.Name.Should().Be("Updated Device Name");
@@ -196,7 +199,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PATCH_device_empty_payload_returns_bad_request()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid);
 
@@ -208,7 +211,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_categories_replaces_assignments()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var categoryA = await InventoryTestHelpers.CreateCategoryAsync(admin);
         var categoryB = await InventoryTestHelpers.CreateCategoryAsync(admin);
@@ -221,6 +224,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var updated = await InventoryTestHelpers.DeserializeResponseAsync<DeviceView>(response);
         updated.Categories.Select(c => c.Guid).Should().Equal([categoryC.Guid]);
     }
@@ -228,7 +232,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_categories_with_unknown_category_returns_not_found()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid);
 
@@ -243,7 +247,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_device_parameter_upsert_creates_and_updates_value()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid);
 
@@ -260,12 +264,14 @@ public class DeviceEndpointsTests(AuthFixture fixture)
             Value = "https://example.com/support-v2"
         });
         updateParamResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var updatedParameter = await InventoryTestHelpers.DeserializeResponseAsync<DeviceParameterView>(updateParamResponse);
         updatedParameter.Key.Should().Be("support_url");
         updatedParameter.Value.Should().Be("https://example.com/support-v2");
 
         var getResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/devices/{device.Guid}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var refreshed = await InventoryTestHelpers.DeserializeResponseAsync<DeviceView>(getResponse);
         refreshed.Parameters.Count(p => p.Key == "support_url").Should().Be(1);
         refreshed.Parameters.Should().Contain(p => p.Key == "support_url" && p.Value == "https://example.com/support-v2");
@@ -274,7 +280,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task DELETE_device_parameter_removes_and_repeated_delete_returns_not_found()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid);
 
@@ -288,7 +294,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PATCH_device_stock_updates_fields_and_rejects_negative_count()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid);
 
@@ -299,6 +305,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
         });
 
         updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
         var updatedStock = await InventoryTestHelpers.DeserializeResponseAsync<StockView>(updateResponse);
         updatedStock.StockCount.Should().Be(42);
         updatedStock.StockUnitType.Should().Be(StockUnitType.KG);
@@ -314,7 +321,7 @@ public class DeviceEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task DELETE_device_removes_record()
     {
-        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
+        var admin = await fixture.GetInitialAdminUserAsync();
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
         var device = await InventoryTestHelpers.CreateDeviceAsync(admin, vendor.Guid);
 

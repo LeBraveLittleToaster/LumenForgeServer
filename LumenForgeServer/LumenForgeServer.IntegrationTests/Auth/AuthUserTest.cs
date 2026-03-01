@@ -1,3 +1,4 @@
+// AuthUserTest.cs
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -23,9 +24,8 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_users_supports_search_and_paging()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
-        var userBundle = await CreateNewUserAsync(fixture, options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
+        var userBundle = await CreateNewUserAsync(fixture);
 
         var userKcId = userBundle.GetKcUserId();
         var resp = await adminBundle.AppClient.GetAsync($"/api/v1/auth/users?search={userKcId}&limit=10&offset=0");
@@ -41,18 +41,16 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_users_invalid_limit_returns_bad_request()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
         var resp = await adminBundle.AppClient.GetAsync("/api/v1/auth/users?limit=0&offset=0");
 
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
- 
+
     [Fact]
     public async Task POST_user_invalid_payload_returns_bad_request()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
 
         var resp = await adminBundle.AppClient.PutAsJsonAsync("/api/v1/auth/users", new AddKcUserDto
         {
@@ -71,10 +69,9 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_user_roles_empty_when_user_has_no_groups()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminUser =  await fixture.GetInitialAdminUserAsync(options);
+        var adminUser = await fixture.GetInitialAdminUserAsync();
         var testUser = CreateTestUserDto.CreateTestUser();
-        var userBundle = await fixture.CreateNewUserAsync(options, testUser);
+        var userBundle = await fixture.CreateNewUserAsync(testUser);
 
         var userKcId = userBundle.GetKcUserId();
         var resp = await adminUser.AppClient.GetAsync($"/api/v1/auth/users/{userKcId}/roles");
@@ -89,8 +86,7 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_user_not_found_returns_not_found()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
         var resp = await adminBundle.AppClient.GetAsync($"/api/v1/auth/users/{Guid.NewGuid()}");
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -98,9 +94,8 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task DELETE_user_removes_local_record()
     {
-        var options = KcAndAppClientOptions.FromEnvironment();
-        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
-        var userBundle = await CreateNewUserAsync(fixture, options);
+        var adminBundle = await fixture.GetInitialAdminUserAsync();
+        var userBundle = await CreateNewUserAsync(fixture);
         var userKcId = userBundle.GetKcUserId();
 
         var deleteResp = await adminBundle.AppClient.DeleteAsync($"/api/v1/auth/users/{userKcId}");
@@ -110,9 +105,9 @@ public class AuthUserTest(AuthFixture fixture)
         getResp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    private static Task<TestUserBundle> CreateNewUserAsync(AuthFixture fixture, KcAndAppClientOptions options)
+    private static Task<TestUserBundle> CreateNewUserAsync(AuthFixture fixture)
     {
         var dto = CreateTestUserDto.CreateTestUser();
-        return fixture.CreateNewUserAsync(options, dto);
+        return fixture.CreateNewUserAsync(dto);
     }
 }
