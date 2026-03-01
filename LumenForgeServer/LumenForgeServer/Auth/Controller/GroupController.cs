@@ -30,7 +30,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the group list.</returns>
     [HttpGet("")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.GroupRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -53,6 +53,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [Authorize(Roles = nameof(Role.GroupRead))]
     [Produces("application/json")]
     public async Task<IActionResult> GetGroup([FromRoute] Guid groupGuid, CancellationToken ct)
     {
@@ -67,7 +68,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 201 response with the created user payload.</returns>
     [HttpPut("")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.GroupCreate))]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -88,7 +89,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the updated group payload.</returns>
     [HttpPatch("{groupGuid:guid}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.GroupUpdate))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -107,7 +108,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 204 response with when deleted succesfully.</returns>
     [HttpDelete("{groupGuid:guid}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.GroupDelete))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -127,7 +128,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with when assigned successfully.</returns>
     [HttpPut("{groupGuid:guid}/users")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.GroupUpdate))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -146,7 +147,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the user list.</returns>
     [HttpGet("{groupGuid:guid}/users")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Policy = nameof(Policy.GroupRoleAndUserRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
@@ -164,7 +165,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 204 response when removed successfully.</returns>
     [HttpDelete("{groupGuid:guid}/users/{userKcId}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Policy = nameof(Policy.GroupUpdateReadUser))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -186,7 +187,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with the role list.</returns>
     [HttpGet("{groupGuid:guid}/roles")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Policy = nameof(Policy.GroupUpdateReadUser))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
@@ -204,7 +205,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 204 response when assigned successfully.</returns>
     [HttpPut("{groupGuid:guid}/roles/{role}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Policy = nameof(Policy.GroupUpdateRoleRead))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -224,7 +225,7 @@ public class GroupController(GroupService groupService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 204 response when removed successfully.</returns>
     [HttpDelete("{groupGuid:guid}/roles/{role}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Policy = nameof(Policy.GroupUpdateRoleRead))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

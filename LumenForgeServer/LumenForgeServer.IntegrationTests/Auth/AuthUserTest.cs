@@ -9,6 +9,7 @@ using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
@@ -22,24 +23,27 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_users_supports_search_and_paging()
     {
-        var kcClient = await CreateKcUserAndLocalUserAsync(fixture);
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var userBundle = await CreateNewUserAsync(fixture, options);
 
-        var resp = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users?search={kcClient.KcUserId}&limit=10&offset=0");
+        var userKcId = userBundle.GetKcUserId();
+        var resp = await adminBundle.AppClient.GetAsync($"/api/v1/auth/users?search={userKcId}&limit=10&offset=0");
 
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var content = await resp.Content.ReadAsStringAsync();
         var users = JsonSerializer.Deserialize<List<UserView>>(content, Json.GetJsonSerializerOptions());
         users.Should().NotBeNull();
-        users.Should().Contain(u => u.UserKcId == kcClient.KcUserId);
+        users.Should().Contain(u => u.UserKcId == userKcId);
     }
 
     [Fact]
     public async Task GET_users_invalid_limit_returns_bad_request()
     {
-        var kcClient = await CreateKcUserAndLocalUserAsync(fixture);
-
-        var resp = await kcClient.AppApiClient.GetAsync("/api/v1/auth/users?limit=0&offset=0");
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var resp = await adminBundle.AppClient.GetAsync("/api/v1/auth/users?limit=0&offset=0");
 
         resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -47,9 +51,10 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task POST_user_invalid_payload_returns_bad_request()
     {
-        using var client = new HttpClient();
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
 
-        var resp = await client.PutAsJsonAsync("/api/v1/auth/users", new AddKcUserDto
+        var resp = await adminBundle.AppClient.PutAsJsonAsync("/api/v1/auth/users", new AddKcUserDto
         {
             Username = " ",
             Password = "Password" + Guid.NewGuid(),
@@ -66,9 +71,13 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_user_roles_empty_when_user_has_no_groups()
     {
-        var kcClient = await CreateKcUserAndLocalUserAsync(fixture);
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminUser =  await fixture.GetInitialAdminUserAsync(options);
+        var testUser = CreateTestUserDto.CreateTestUser();
+        var userBundle = await fixture.CreateNewUserAsync(options, testUser);
 
-        var resp = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}/roles");
+        var userKcId = userBundle.GetKcUserId();
+        var resp = await adminUser.AppClient.GetAsync($"/api/v1/auth/users/{userKcId}/roles");
 
         resp.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await resp.Content.ReadAsStringAsync();
@@ -80,24 +89,30 @@ public class AuthUserTest(AuthFixture fixture)
     [Fact]
     public async Task GET_user_not_found_returns_not_found()
     {
-        var resp = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{Guid.NewGuid()}");
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var resp = await adminBundle.AppClient.GetAsync($"/api/v1/auth/users/{Guid.NewGuid()}");
         resp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task DELETE_user_removes_local_record()
     {
-        var kcClient = await CreateKcUserAndLocalUserAsync(fixture);
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        var userBundle = await CreateNewUserAsync(fixture, options);
+        var userKcId = userBundle.GetKcUserId();
 
-        var deleteResp = await kcClient.AppApiClient.DeleteAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
+        var deleteResp = await adminBundle.AppClient.DeleteAsync($"/api/v1/auth/users/{userKcId}");
         deleteResp.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var getResp = await kcClient.AppApiClient.GetAsync($"/api/v1/auth/users/{kcClient.KcUserId}");
+        var getResp = await adminBundle.AppClient.GetAsync($"/api/v1/auth/users/{userKcId}");
         getResp.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    private static Task<TestAppClient> CreateKcUserAndLocalUserAsync(AuthFixture fixture)
+    private static Task<TestUserBundle> CreateNewUserAsync(AuthFixture fixture, KcAndAppClientOptions options)
     {
-        return null;
+        var dto = CreateTestUserDto.CreateTestUser();
+        return fixture.CreateNewUserAsync(options, dto);
     }
 }

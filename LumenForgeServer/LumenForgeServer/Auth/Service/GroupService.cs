@@ -59,7 +59,7 @@ public class GroupService(IAuthRepository authRepository)
     /// <summary>
     /// Creates a group record from a payload.
     /// </summary>
-    /// <param name="addGroupDto">Payload containing the name and description.</param>
+    /// <param name="dto">Payload containing the name, description and roles.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>The created group.</returns>
     /// <exception cref="ValidationException">Thrown when the payload fails validation.</exception>
@@ -71,6 +71,8 @@ public class GroupService(IAuthRepository authRepository)
         try
         {
             await authRepository.AddGroupAsync(group, ct);
+            await authRepository.SaveChangesAsync(ct);
+            await authRepository.AssignRolesToGroupAsync(group, dto.Roles, ct);
             await authRepository.SaveChangesAsync(ct);
         }
         catch (DbUpdateException e)

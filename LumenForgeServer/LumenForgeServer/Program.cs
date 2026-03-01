@@ -21,6 +21,7 @@ builder.Services.AddCors(options =>
 
 
 DiRegistration.RegisterMemoryCache(builder);
+DiRegistration.AddAuthorization(builder);
 DiRegistration.AddAuthenticationJwt(builder);
 DiRegistration.RegisterDbContext(builder);
 DiRegistration.RegisterRepositories(builder);

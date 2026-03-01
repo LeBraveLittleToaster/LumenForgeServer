@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.TestSupport;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.Update;
 using LumenForgeServer.Inventory.Dto.View;
@@ -18,7 +20,7 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_categories_requires_authentication()
     {
-        using var client = InventoryTestHelpers.CreateAnonymousClient(fixture);
+        using var client = fixture.GetAnonymousClient();
 
         var response = await client.GetAsync("/api/v1/inventory/categories");
 
@@ -28,9 +30,11 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_category_as_non_admin_returns_forbidden()
     {
-        var nonAdmin = await InventoryTestHelpers.CreateNonAdminClientAsync(fixture);
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var testUser = CreateTestUserDto.CreateTestUser();
+        var nonAdmin = await fixture.CreateNewUserAsync(options, testUser);
 
-        var response = await nonAdmin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
+        var response = await nonAdmin.AppClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
         {
             Name = "NoAdminCategory-" + Guid.NewGuid(),
             Description = "Should fail"
@@ -42,10 +46,10 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task Category_crud_and_search_flow_works()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
         var categoryName = "Category-" + Guid.NewGuid();
 
-        var createResponse = await admin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
+        var createResponse = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
         {
             Name = categoryName,
             Description = "Description " + Guid.NewGuid()
@@ -54,15 +58,15 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
 
         var created = await InventoryTestHelpers.DeserializeResponseAsync<CategoryView>(createResponse);
 
-        var getResponse = await admin.AppApiClient.GetAsync($"/api/v1/inventory/categories/{created.Guid}");
+        var getResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/categories/{created.Guid}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var listResponse = await admin.AppApiClient.GetAsync($"/api/v1/inventory/categories?search={Uri.EscapeDataString(categoryName)}&limit=10&offset=0");
+        var listResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/categories?search={Uri.EscapeDataString(categoryName)}&limit=10&offset=0");
         listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var listed = await InventoryTestHelpers.DeserializeResponseAsync<List<CategoryView>>(listResponse);
         listed.Should().Contain(c => c.Guid == created.Guid);
 
-        var patchResponse = await admin.AppApiClient.PatchAsJsonAsync(
+        var patchResponse = await admin.AppClient.PatchAsJsonAsync(
             $"/api/v1/inventory/categories/{created.Guid}",
             new UpdateCategoryDto
             {
@@ -74,27 +78,27 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
         updated.Name.Should().EndWith("-Updated");
         updated.Description.Should().Be("Updated description");
 
-        var deleteResponse = await admin.AppApiClient.DeleteAsync($"/api/v1/inventory/categories/{created.Guid}");
+        var deleteResponse = await admin.AppClient.DeleteAsync($"/api/v1/inventory/categories/{created.Guid}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var getDeletedResponse = await admin.AppApiClient.GetAsync($"/api/v1/inventory/categories/{created.Guid}");
+        var getDeletedResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/categories/{created.Guid}");
         getDeletedResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task PUT_category_with_duplicate_name_returns_conflict()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
         var categoryName = "DuplicateCategory-" + Guid.NewGuid();
 
-        var firstCreate = await admin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
+        var firstCreate = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
         {
             Name = categoryName,
             Description = "Description A"
         });
         firstCreate.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var secondCreate = await admin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
+        var secondCreate = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
         {
             Name = categoryName,
             Description = "Description B"
@@ -105,10 +109,10 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PATCH_category_empty_payload_returns_bad_request()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
         var category = await InventoryTestHelpers.CreateCategoryAsync(admin);
 
-        var response = await admin.AppApiClient.PatchAsJsonAsync($"/api/v1/inventory/categories/{category.Guid}", new { });
+        var response = await admin.AppClient.PatchAsJsonAsync($"/api/v1/inventory/categories/{category.Guid}", new { });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -116,9 +120,9 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_category_not_found_returns_not_found()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
 
-        var response = await admin.AppApiClient.GetAsync($"/api/v1/inventory/categories/{Guid.NewGuid()}");
+        var response = await admin.AppClient.GetAsync($"/api/v1/inventory/categories/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -126,9 +130,9 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_categories_invalid_limit_returns_bad_request()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
 
-        var response = await admin.AppApiClient.GetAsync("/api/v1/inventory/categories?limit=0&offset=0");
+        var response = await admin.AppClient.GetAsync("/api/v1/inventory/categories?limit=0&offset=0");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -136,7 +140,7 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_vendors_requires_authentication()
     {
-        using var client = InventoryTestHelpers.CreateAnonymousClient(fixture);
+        using var client = fixture.GetAnonymousClient();
 
         var response = await client.GetAsync("/api/v1/inventory/vendors");
 
@@ -146,9 +150,11 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PUT_vendor_as_non_admin_returns_forbidden()
     {
-        var nonAdmin = await InventoryTestHelpers.CreateNonAdminClientAsync(fixture);
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var testUser = CreateTestUserDto.CreateTestUser();
+        var nonAdmin = await fixture.CreateNewUserAsync(options, testUser);
 
-        var response = await nonAdmin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
+        var response = await nonAdmin.AppClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
         {
             Name = "NoAdminVendor-" + Guid.NewGuid()
         });
@@ -159,10 +165,10 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task Vendor_crud_and_search_flow_works()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
         var vendorName = "Vendor-" + Guid.NewGuid();
 
-        var createResponse = await admin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
+        var createResponse = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
         {
             Name = vendorName
         });
@@ -170,15 +176,15 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
 
         var created = await InventoryTestHelpers.DeserializeResponseAsync<VendorView>(createResponse);
 
-        var getResponse = await admin.AppApiClient.GetAsync($"/api/v1/inventory/vendors/{created.Guid}");
+        var getResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/vendors/{created.Guid}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var listResponse = await admin.AppApiClient.GetAsync($"/api/v1/inventory/vendors?search={Uri.EscapeDataString(vendorName)}&limit=10&offset=0");
+        var listResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/vendors?search={Uri.EscapeDataString(vendorName)}&limit=10&offset=0");
         listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var listed = await InventoryTestHelpers.DeserializeResponseAsync<List<VendorView>>(listResponse);
         listed.Should().Contain(v => v.Guid == created.Guid);
 
-        var patchResponse = await admin.AppApiClient.PatchAsJsonAsync(
+        var patchResponse = await admin.AppClient.PatchAsJsonAsync(
             $"/api/v1/inventory/vendors/{created.Guid}",
             new UpdateVendorDto
             {
@@ -188,26 +194,26 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
         var updated = await InventoryTestHelpers.DeserializeResponseAsync<VendorView>(patchResponse);
         updated.Name.Should().EndWith("-Updated");
 
-        var deleteResponse = await admin.AppApiClient.DeleteAsync($"/api/v1/inventory/vendors/{created.Guid}");
+        var deleteResponse = await admin.AppClient.DeleteAsync($"/api/v1/inventory/vendors/{created.Guid}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var getDeletedResponse = await admin.AppApiClient.GetAsync($"/api/v1/inventory/vendors/{created.Guid}");
+        var getDeletedResponse = await admin.AppClient.GetAsync($"/api/v1/inventory/vendors/{created.Guid}");
         getDeletedResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task PUT_vendor_with_duplicate_name_returns_conflict()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
         var vendorName = "DuplicateVendor-" + Guid.NewGuid();
 
-        var firstCreate = await admin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
+        var firstCreate = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
         {
             Name = vendorName
         });
         firstCreate.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var secondCreate = await admin.AppApiClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
+        var secondCreate = await admin.AppClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
         {
             Name = vendorName
         });
@@ -217,10 +223,10 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task PATCH_vendor_missing_name_returns_bad_request()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
         var vendor = await InventoryTestHelpers.CreateVendorAsync(admin);
 
-        var response = await admin.AppApiClient.PatchAsJsonAsync($"/api/v1/inventory/vendors/{vendor.Guid}", new { });
+        var response = await admin.AppClient.PatchAsJsonAsync($"/api/v1/inventory/vendors/{vendor.Guid}", new { });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -228,9 +234,9 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_vendor_not_found_returns_not_found()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
 
-        var response = await admin.AppApiClient.GetAsync($"/api/v1/inventory/vendors/{Guid.NewGuid()}");
+        var response = await admin.AppClient.GetAsync($"/api/v1/inventory/vendors/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
@@ -238,9 +244,9 @@ public class InventoryCatalogEndpointsTests(AuthFixture fixture)
     [Fact]
     public async Task GET_vendors_invalid_limit_returns_bad_request()
     {
-        var admin = await InventoryTestHelpers.CreateAdminClientAsync(fixture);
+        var admin = await fixture.GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
 
-        var response = await admin.AppApiClient.GetAsync("/api/v1/inventory/vendors?limit=0&offset=0");
+        var response = await admin.AppClient.GetAsync("/api/v1/inventory/vendors?limit=0&offset=0");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

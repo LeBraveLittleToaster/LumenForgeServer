@@ -12,7 +12,7 @@ namespace LumenForgeServer.Auth.Service;
 public class KcService
 {
     private KcClient? _kcClient;
-    private readonly KcClientOptions _kcOptions = KcClientOptions.FromEnvironment();
+    private readonly KcAndAppClientOptions _kcAndAppOptions = KcAndAppClientOptions.FromEnvironment();
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     private async Task EnsureInitializedAsync()
@@ -21,7 +21,7 @@ public class KcService
         try
         {
             if (_kcClient == null)
-                _kcClient = await KcClient.GenerateKcClientWithAccessTokenAsync(_kcOptions, CancellationToken.None);
+                _kcClient = await KcClient.GenerateKcClientWithAccessTokenAsync(_kcAndAppOptions, CancellationToken.None);
             else if (_kcClient.IsTokenExpired())
             {
                 await _kcClient.RefreshTokenAsync();
@@ -54,7 +54,7 @@ public class KcService
         };
 
         var response =
-            await _kcClient!.AdminClient.PostAsJsonAsync($"/admin/realms/{_kcOptions.KcRealm}/users", newUser, ct);
+            await _kcClient!.AdminClient.PostAsJsonAsync($"/admin/realms/{_kcAndAppOptions.KcRealm}/users", newUser, ct);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -83,7 +83,7 @@ public class KcService
         await EnsureInitializedAsync();
 
         var lookupResponse = await _kcClient!.AdminClient.GetAsync(
-            $"/admin/realms/{_kcOptions.KcRealm}/users?username={Uri.EscapeDataString(username)}&exact=true",
+            $"/admin/realms/{_kcAndAppOptions.KcRealm}/users?username={Uri.EscapeDataString(username)}&exact=true",
             ct);
 
         if (!lookupResponse.IsSuccessStatusCode)
@@ -113,7 +113,7 @@ public class KcService
         var userId = idElement.GetString();
 
         var deleteResponse = await _kcClient.AdminClient.DeleteAsync(
-            $"/admin/realms/{_kcOptions.KcRealm}/users/{userId}",
+            $"/admin/realms/{_kcAndAppOptions.KcRealm}/users/{userId}",
             ct);
 
         if (deleteResponse.IsSuccessStatusCode)
@@ -143,7 +143,7 @@ public class KcService
             ct.ThrowIfCancellationRequested();
 
             var url =
-                $"/admin/realms/{_kcOptions.KcRealm}/users" +
+                $"/admin/realms/{_kcAndAppOptions.KcRealm}/users" +
                 $"?search={Uri.EscapeDataString(search)}" +
                 $"&first={first}" +
                 $"&max={pageSize}";
@@ -185,7 +185,7 @@ public class KcService
 
                 var userId = idEl.GetString()!;
                 var deleteResponse = await _kcClient.AdminClient.DeleteAsync(
-                    $"/admin/realms/{_kcOptions.KcRealm}/users/{userId}",
+                    $"/admin/realms/{_kcAndAppOptions.KcRealm}/users/{userId}",
                     ct);
 
                 if (deleteResponse.IsSuccessStatusCode)

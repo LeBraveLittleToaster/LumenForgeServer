@@ -5,6 +5,7 @@ using LumenForgeServer.Inventory.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using LumenForgeServer.Auth.Domain;
 
 namespace LumenForgeServer.Inventory.Controller;
 
@@ -16,7 +17,6 @@ namespace LumenForgeServer.Inventory.Controller;
 /// </remarks>
 [Route("api/v1/inventory/devices")]
 [ApiController]
-[Authorize]
 public class DeviceController(DeviceService deviceService) : ControllerBase
 {
     /// <summary>
@@ -29,6 +29,7 @@ public class DeviceController(DeviceService deviceService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with device results.</returns>
     [HttpGet("")]
+    [Authorize(Roles = nameof(Role.DeviceRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -39,6 +40,7 @@ public class DeviceController(DeviceService deviceService) : ControllerBase
     }
 
     [HttpGet("{deviceGuid:guid}")]
+    [Authorize(Roles = nameof(Role.DeviceRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]

@@ -35,7 +35,7 @@ public static class DiRegistration
         });
     }
 
-    
+
     /// <summary>
     /// Registers the in-memory cache.
     /// </summary>
@@ -161,16 +161,16 @@ public static class DiRegistration
                     OnTokenValidated = async ctx =>
                     {
                         if (ctx.Principal?.Identity is not ClaimsIdentity identity) return;
-                        
+
                         var keycloakUserId = ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
                         if (keycloakUserId is null) return;
 
                         var jti = ctx.Principal?.FindFirst("jti")?.Value ?? "no-jti";
                         var cacheKey = $"app-roles:{keycloakUserId}:{jti}";
-                        
-                        var cache= ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
-                        if (!cache.TryGetValue(cacheKey, out string[]? appRoleNames) || appRoleNames is null){
-                        
+
+                        var cache = ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+                        if (!cache.TryGetValue(cacheKey, out string[]? appRoleNames) || appRoleNames is null)
+                        {
                             if (IsPrivilegedRole(["REALM_ADMIN", "REALM_OWNER"], identity))
                             {
                                 appRoleNames = RoleClaims.AllAppRoles;
@@ -178,9 +178,11 @@ public static class DiRegistration
                             else
                             {
                                 var userService = ctx.HttpContext.RequestServices.GetRequiredService<UserService>();
-                                var dbRoles = await userService.GetRolesForKcId(keycloakUserId, ctx.HttpContext.RequestAborted);
+                                var dbRoles =
+                                    await userService.GetRolesForKcId(keycloakUserId, ctx.HttpContext.RequestAborted);
                                 appRoleNames = dbRoles.Select(r => r.ToString()).Distinct().ToArray();
                             }
+
                             cache.Set(cacheKey, appRoleNames, new MemoryCacheEntryOptions
                             {
                                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
@@ -195,7 +197,7 @@ public static class DiRegistration
             });
         builder.Services.AddAuthorization();
     }
-    
+
     /// <summary>
     /// Adds role claims from Keycloak "realm_access" into the current identity.
     /// </summary>
@@ -219,15 +221,20 @@ public static class DiRegistration
     /// </summary>
     /// <param name="builder">Application builder that owns the service collection.</param>
     /// <remarks>
-    /// Adds the Administrator (REALM_ADMIN) and OwnerOnly (REALM_OWNER) policies.
+    /// Policies can be found under Enum Policy, Roles in the Enum Role in Auth.Domain. 
     /// </remarks>
     public static void AddAuthorization(WebApplicationBuilder builder)
     {
         builder.Services.AddAuthorization(options =>
         {
-            builder.Services.AddAuthorizationBuilder()
-                .AddPolicy("Administrator", p => p.RequireRole("REALM_ADMIN"))
-                .AddPolicy("OwnerOnly", p => p.RequireRole("REALM_OWNER"));
+            options.AddPolicy(nameof(Policy.GroupRoleAndUserRead),
+                p => p.RequireRole(nameof(Role.GroupRead), nameof(Role.RoleRead), nameof(Role.UserRead)));
+            options.AddPolicy(nameof(Policy.GroupUpdateReadUser),
+                p => p.RequireRole(nameof(Role.GroupUpdate), nameof(Role.UserRead)));
+            options.AddPolicy(nameof(Policy.GroupUpdateRoleRead),
+                p => p.RequireRole(nameof(Role.GroupUpdate), nameof(Role.RoleRead)));
+            options.AddPolicy(nameof(Policy.UserAndRoleRead),
+                p => p.RequireRole(nameof(Role.UserRead), nameof(Role.RoleRead)));
         });
     }
 }

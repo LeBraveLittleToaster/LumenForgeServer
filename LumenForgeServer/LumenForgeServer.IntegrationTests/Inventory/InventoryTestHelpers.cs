@@ -15,40 +15,10 @@ namespace LumenForgeServer.IntegrationTests.Inventory;
 /// </summary>
 internal static class InventoryTestHelpers
 {
-    
-    public static HttpClient CreateAnonymousClient(AuthFixture fixture)
+    public static async Task<CategoryView> CreateCategoryAsync(TestUserBundle userBundle, string? name = null)
     {
-        return new HttpClient();
-    }
-
-    public static Task<TestAppClient> CreateAdminClientAsync(AuthFixture fixture)
-    {
-        //return fixture.CreateNewTestUserClientAsync(TestUserInfo.CreateTestUserInfoWithGuid(), CancellationToken.None);
-        return null;
-    }
-
-    public static Task<TestAppClient> CreateNonAdminClientAsync(AuthFixture fixture)
-    {
-        return null;
-        /*
-        var guid = Guid.NewGuid().ToString("N");
-        return fixture.CreateNewTestUserClientAsync(new TestUserInfo(
-            Username: "InventoryNoAdmin" + guid,
-            Password: "Password" + guid,
-            Email: "inventory-no-admin-" + guid + "@test.de",
-            FirstName: "Inventory",
-            LastName: "NoAdmin",
-            Groups: [],
-            RealmRoles: []), CancellationToken.None);
-            */
-    }
-
-    public static async Task<CategoryView> CreateCategoryAsync(TestAppClient kcClient, string? name = null)
-    {
-        return null;
-        /*
         var categoryName = name ?? $"Category-{Guid.NewGuid()}";
-        var response = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
+        var response = await userBundle.AppClient.PutAsJsonAsync("/api/v1/inventory/categories", new CreateCategoryDto
         {
             Name = categoryName,
             Description = "Category description " + Guid.NewGuid()
@@ -56,13 +26,12 @@ internal static class InventoryTestHelpers
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         return await DeserializeResponseAsync<CategoryView>(response);
-        */
     }
 
-    public static async Task<VendorView> CreateVendorAsync(TestAppClient kcClient, string? name = null)
+    public static async Task<VendorView> CreateVendorAsync(TestUserBundle userBundle, string? name = null)
     {
         var vendorName = name ?? $"Vendor-{Guid.NewGuid()}";
-        var response = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
+        var response = await userBundle.AppClient.PutAsJsonAsync("/api/v1/inventory/vendors", new CreateVendorDto
         {
             Name = vendorName
         });
@@ -72,12 +41,12 @@ internal static class InventoryTestHelpers
     }
 
     public static async Task<DeviceView> CreateDeviceAsync(
-        TestAppClient kcClient,
+        TestUserBundle userBundle,
         Guid vendorGuid,
         IReadOnlyCollection<Guid>? categoryGuids = null,
         string? serialNumber = null)
     {
-        var response = await kcClient.AppApiClient.PutAsJsonAsync("/api/v1/inventory/devices", new CreateDeviceDto
+        var response = await userBundle.AppClient.PutAsJsonAsync("/api/v1/inventory/devices", new CreateDeviceDto
         {
             SerialNumber = serialNumber ?? $"SN-{Guid.NewGuid()}",
             Name = "Device " + Guid.NewGuid(),

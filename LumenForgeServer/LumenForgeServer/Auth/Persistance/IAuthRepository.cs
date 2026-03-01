@@ -131,6 +131,13 @@ public interface IAuthRepository
     /// <param name="ct">Cancellation token.</param>
     Task AssignRoleToGroupAsync(Group group, Role role, CancellationToken ct);
     /// <summary>
+    /// Assigns multiple roles to a group.
+    /// </summary>
+    /// <param name="group">Group receiving the role.</param>
+    /// <param name="roles">Array of Roles to assign.</param>
+    /// <param name="ct">Cancellation token.</param>
+    Task AssignRolesToGroupAsync(Group group, Role[] roles, CancellationToken ct);
+    /// <summary>
     /// Removes a role assignment from a group.
     /// </summary>
     /// <param name="group">Group losing the role.</param>

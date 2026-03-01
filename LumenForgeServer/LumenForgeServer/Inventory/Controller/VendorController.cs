@@ -1,3 +1,4 @@
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Inventory.Dto.Create;
 using LumenForgeServer.Inventory.Dto.Query;
 using LumenForgeServer.Inventory.Dto.Update;
@@ -15,7 +16,6 @@ namespace LumenForgeServer.Inventory.Controller;
 /// </remarks>
 [Route("api/v1/inventory/vendors")]
 [ApiController]
-[Authorize]
 public class VendorController(VendorService vendorService) : ControllerBase
 {
     /// <summary>
@@ -28,6 +28,7 @@ public class VendorController(VendorService vendorService) : ControllerBase
     /// <param name="ct">Cancellation token.</param>
     /// <returns>A 200 response with vendor results.</returns>
     [HttpGet("")]
+    [Authorize(Roles = nameof(Role.VendorRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Produces("application/json")]
@@ -38,6 +39,7 @@ public class VendorController(VendorService vendorService) : ControllerBase
     }
 
     [HttpGet("{vendorGuid:guid}")]
+    [Authorize(Roles = nameof(Role.VendorRead))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]
@@ -48,7 +50,7 @@ public class VendorController(VendorService vendorService) : ControllerBase
     }
 
     [HttpPut("")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.VendorCreate))]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -60,7 +62,7 @@ public class VendorController(VendorService vendorService) : ControllerBase
     }
 
     [HttpPatch("{vendorGuid:guid}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.VendorUpdate))]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -73,7 +75,7 @@ public class VendorController(VendorService vendorService) : ControllerBase
     }
 
     [HttpDelete("{vendorGuid:guid}")]
-    [Authorize(Roles = "REALM_ADMIN")]
+    [Authorize(Roles = nameof(Role.VendorDelete))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [Produces("application/json")]

@@ -11,14 +11,14 @@ namespace LumenForgeServer.Auth.Client;
 /// </summary>
 public sealed class KcClient
 {
-    private readonly KcClientOptions _kcOptions;
+    private readonly KcAndAppClientOptions _kcAndAppOptions;
 
-    private KcClient(KcClientOptions kcOptions)
+    private KcClient(KcAndAppClientOptions kcAndAppOptions)
     {
-        _kcOptions = kcOptions;
+        _kcAndAppOptions = kcAndAppOptions;
         AdminClient = new HttpClient
         {
-            BaseAddress = new Uri(kcOptions.KcBaseUrl)
+            BaseAddress = new Uri(kcAndAppOptions.KcBaseUrl)
         };
     }
 
@@ -26,19 +26,19 @@ public sealed class KcClient
     private JwtSecurityToken? AccessToken { get; set; }
     private string? AccessTokenString { get; set; }
 
-    public static async Task<KcClient> GenerateKcClientWithAccessTokenAsync(KcClientOptions kcClientOptions, CancellationToken ct)
+    public static async Task<KcClient> GenerateKcClientWithAccessTokenAsync(KcAndAppClientOptions kcAndAppClientOptions, CancellationToken ct)
     {
-        var kcClient = new KcClient(kcClientOptions);
-        await kcClient.RequestAndAttachAdminTokenAsync(kcClientOptions, ct);
+        var kcClient = new KcClient(kcAndAppClientOptions);
+        await kcClient.RequestAndAttachAdminTokenAsync(kcAndAppClientOptions, ct);
         return kcClient;
     }
     
-    private async Task<bool> RequestAndAttachAdminTokenAsync(KcClientOptions kcClientOptions, CancellationToken ct)
+    private async Task<bool> RequestAndAttachAdminTokenAsync(KcAndAppClientOptions kcAndAppClientOptions, CancellationToken ct)
     {
         var data = new Dictionary<string, string>
         {
-            ["username"] = kcClientOptions.KcAdminUser,
-            ["password"] = kcClientOptions.KcAdminPass,
+            ["username"] = kcAndAppClientOptions.KcAdminUser,
+            ["password"] = kcAndAppClientOptions.KcAdminPass,
             ["grant_type"] = "password",
             ["client_id"] = "admin-cli",
         };
@@ -47,7 +47,7 @@ public sealed class KcClient
 
         try
         {
-            var url = $"/realms/{kcClientOptions.KcAdminRealm}/protocol/openid-connect/token";
+            var url = $"/realms/{kcAndAppClientOptions.KcAdminRealm}/protocol/openid-connect/token";
             var resp = await AdminClient.PostAsync(url, content, ct);
 
             var body = await resp.Content.ReadAsStringAsync(ct);
@@ -78,7 +78,7 @@ public sealed class KcClient
     
     public async Task RefreshTokenAsync(CancellationToken ct = default)
     {
-        await RequestAndAttachAdminTokenAsync(_kcOptions, ct);
+        await RequestAndAttachAdminTokenAsync(_kcAndAppOptions, ct);
     }
     
     public bool IsTokenExpired(Duration? skew = null)

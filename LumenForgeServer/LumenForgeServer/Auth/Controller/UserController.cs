@@ -4,6 +4,7 @@ using LumenForgeServer.Auth.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Common.Exceptions;
 
@@ -32,7 +33,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpGet("")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+    [Authorize(Roles = nameof(Role.UserRead))]
     [Produces("application/json")]
     public async Task<IActionResult> ListUsers([FromQuery] ListQueryDto query, CancellationToken ct)
     {
@@ -74,7 +75,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+    [Authorize(Roles = nameof(Role.UserRead))]
     [Produces("application/json")]
     public async Task<IActionResult> GetUser(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
@@ -94,7 +95,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpGet("{userKcId}/groups")] 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+    [Authorize(Policy = nameof(Policy.GroupRoleAndUserRead))]
     [Produces("application/json")]
     public async Task<IActionResult> GetUserGroups(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
@@ -117,7 +118,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpDelete("{userKcId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+    [Authorize(Roles = nameof(Role.UserDelete))]
     [Produces("application/json")]
     public async Task<IActionResult> DeleteUserByKcId(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]
@@ -137,7 +138,7 @@ public class UserController(UserService userService, KcService kcService, ILogge
     [HttpGet("{keycloakId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [Authorize(Roles = "REALM_ADMIN,REALM_OWNER")]
+    [Authorize(Policy = nameof(Policy.GroupRoleAndUserRead))]
     [Produces("application/json")]
     public async Task<IActionResult> GetUserRoles(
         [FromRoute, Required, MinLength(1), RegularExpression(@".*\S.*")]

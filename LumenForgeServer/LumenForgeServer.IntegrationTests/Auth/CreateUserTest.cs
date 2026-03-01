@@ -2,12 +2,12 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using LumenForgeServer.Auth.Dto;
-using LumenForgeServer.Auth.Dto.Command;
+using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto.Views;
 using LumenForgeServer.Common;
 using LumenForgeServer.IntegrationTests.Collections;
 using LumenForgeServer.IntegrationTests.Fixtures;
+using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.TestSupport;
 
 namespace LumenForgeServer.IntegrationTests.Auth;
@@ -19,28 +19,34 @@ namespace LumenForgeServer.IntegrationTests.Auth;
 public class CreateUserTest(AuthFixture fixture)
 {
     [Fact]
-    public async Task TESCHT()
+    public async Task GET_initial_admin_user_returns_token()
     {
-        await fixture.CreateNewUser();
+        var options = KcAndAppClientOptions.FromEnvironment();
+        var adminBundle = await fixture.GetInitialAdminUserAsync(options);
+        adminBundle.Should().NotBeNull();
+        adminBundle.GetKcUserId().Should().NotBeNullOrWhiteSpace();
     }
     
     [Fact]
     public async Task POST_new_user_creates_user()
     {
-        var testUser = TestUserInfo.CreateTestUserInfoWithGuid();
-        
+        var options = KcAndAppClientOptions.FromEnvironment();
 
-        var userFromDb = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{testUser.Username}");
+        var testUser = CreateTestUserDto.CreateTestUser();
+        var userBundle = await fixture.CreateNewUserWithRolesAsync(options, testUser, [Role.UserRead]);
+        var userKcId = userBundle.GetKcUserId();
+
+        var userFromDb = await userBundle.AppClient.GetAsync($"/api/v1/auth/users/{userKcId}");
         userFromDb.StatusCode.Should().Be(HttpStatusCode.OK);
         userFromDb.Content.Should().NotBeNull();
 
-        var respPutTheSameClient = await fixture.AdminClient.AdminClient.PutAsJsonAsync(
+        var respPutTheSameClient = await userBundle.AppClient.PutAsJsonAsync(
             "/api/v1/auth/users",
-            testUser.ToAddKcUserDto());
+            testUser);
 
         respPutTheSameClient.StatusCode.Should().Be(HttpStatusCode.Conflict);
 
-        var getClient = await fixture.AdminClient.AdminClient.GetAsync($"/api/v1/auth/users/{testUser.Username}");
+        var getClient = await userBundle.AppClient.GetAsync($"/api/v1/auth/users/{userKcId}");
         getClient.StatusCode.Should().Be(HttpStatusCode.OK);
         getClient.Content.Should().NotBeNull();
         var contentStr = await getClient.Content.ReadAsStringAsync();

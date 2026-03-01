@@ -272,6 +272,21 @@ public sealed class AuthRepository(AppDbContext _db) : IAuthRepository
         }, ct).AsTask();
     }
 
+    public Task AssignRolesToGroupAsync(Group group, Role[] roles, CancellationToken ct)
+    {
+        if (group is null) throw new NotFoundException("Group not found");
+        if (roles is null) throw new NotFoundException("Roles not found");
+        var groupId = group.Id != 0 ? group.Id : throw new NotFoundException("GroupId not found");
+
+        var groupRoles = roles.Distinct().Select(r => new GroupRole()
+        {
+            GroupId = groupId,
+            RoleId = r
+        }).ToList();
+        // Handle duplicates
+        return _db.GroupRoles.AddRangeAsync(groupRoles, ct);
+    }
+
     /// <summary>
     /// Removes a role assignment from a group.
     /// </summary>

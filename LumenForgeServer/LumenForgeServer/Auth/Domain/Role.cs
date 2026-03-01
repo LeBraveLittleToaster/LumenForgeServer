@@ -1,3 +1,4 @@
+
 namespace LumenForgeServer.Auth.Domain;
 
 /// <summary>
@@ -81,5 +82,19 @@ public enum Role
     InvoiceStatusDelete = 93,
     
     // Roles
-    RoleRead = 100
+    RoleRead = 101,
+    RoleUpdate = 102,
+    RoleDelete = 103,
+    
+    // Groups
+    GroupCreate = 200,
+    GroupRead = 201,
+    GroupUpdate = 202,
+    GroupDelete = 203,
+    
+    // Users
+    UserCreate = 300,
+    UserRead = 301,
+    UserUpdate = 302,
+    UserDelete = 303,
 }

@@ -3,10 +3,15 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Xml;
+using Azure;
+using FluentAssertions;
 using LumenForgeServer.Auth.Client;
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto.Command;
+using LumenForgeServer.Auth.Dto.Views;
+using LumenForgeServer.Common;
+using LumenForgeServer.Common.Database;
+using LumenForgeServer.Common.Exceptions;
 using LumenForgeServer.IntegrationTests.Client;
 using LumenForgeServer.IntegrationTests.TestSupport;
 
@@ -18,79 +23,160 @@ namespace LumenForgeServer.IntegrationTests.Fixtures;
 public sealed class AuthFixture : IAsyncLifetime
 {
     public static string UsernamePrefix = "test";
-    private readonly KcClientOptions _kcOptions = KcClientOptions.FromEnvironment();
-    public KcClient AdminClient;
+    private readonly KcAndAppClientOptions _kcAndAppOptions = KcAndAppClientOptions.FromEnvironment();
+    private KcClient KcAdminUser;
+    private TestUserBundle AppAdminUser;
 
 
     public async Task InitializeAsync()
     {
-        AdminClient = KcClient.GenerateKcClientWithAccessTokenAsync(_kcOptions, CancellationToken.None).Result;
+        KcAdminUser = await KcClient.GenerateKcClientWithAccessTokenAsync(_kcAndAppOptions, CancellationToken.None);
+        AppAdminUser = await GetInitialAdminUserAsync(KcAndAppClientOptions.FromEnvironment());
     }
 
-    public async Task CreateNewUserWithRoles(TestUserInfo testUserInfo, HashSet<Role> roles)
+    public HttpClient GetAnonymousClient()
     {
+        return new HttpClient()
+        {
+            BaseAddress = new Uri(_kcAndAppOptions.AppBaseUrl)
+        };
     }
 
-    public async Task CreateNewUser()
+    public async Task<TestUserBundle> GetInitialAdminUserAsync(KcAndAppClientOptions options)
+    {
+        
+        var apiHttpClient = new HttpClient()
+        {
+            BaseAddress = new Uri(options.AppBaseUrl)
+        };
+
+        var (accessTokenString, accessToken) = await GetKcTokenRequestAsync(options,DbInitConstants.InitUsername, DbInitConstants.InitPassword);
+        
+        apiHttpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", accessTokenString);
+        
+        return new TestUserBundle(accessToken, apiHttpClient);
+    }
+
+    public async Task<TestUserBundle> CreateNewUserAsync(KcAndAppClientOptions options, CreateTestUserDto dto)
     {
         var apiHttpClient = new HttpClient()
         {
-            BaseAddress = new Uri("https://localhost:7217")
-        };
-        var guid = Guid.NewGuid();
-        var dto = new AddKcUserDto
-        {
-            Username = $"test{guid}",
-            Password = $"pwtoaster{guid}",
-            Email = $"toaster{guid}@toaster.de",
-            FirstName = $"Pascal",
-            LastName = $"Toaster",
-            Groups = ["admins", "users"]
+            BaseAddress = new Uri(options.AppBaseUrl)
         };
         var response = await apiHttpClient.PutAsJsonAsync("/api/v1/auth/users", dto);
+        response.EnsureSuccessStatusCode();
 
+        var (accessTokenString, accessToken) = await GetKcTokenRequestAsync(options,dto.Username, dto.Password);
+        
+        apiHttpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", accessTokenString);
+        
+        return new TestUserBundle(accessToken, apiHttpClient);
+    }
+    
+    public async Task<TestUserBundle> CreateNewUserWithRolesAsync(KcAndAppClientOptions options, CreateTestUserDto dto, Role[] roles)
+    {
+        var apiHttpClient = new HttpClient()
+        {
+            BaseAddress = new Uri(options.AppBaseUrl)
+        };
+        var response = await apiHttpClient.PutAsJsonAsync("/api/v1/auth/users", dto);
+        if(response.StatusCode != HttpStatusCode.Created) throw new RequestFailedException(response.StatusCode.ToString());
+
+        var (accessTokenString, accessToken) = await GetKcTokenRequestAsync(options,dto.Username, dto.Password);
+        
+        apiHttpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", accessTokenString);
+        
+        var guid = Guid.NewGuid().ToString("N");
+        var groupView = await CreateGroupWithRolesAsync(AppAdminUser.AppClient, roles, $"TestGroup{guid}", "Test description" + guid);
+        var assignedResp = await AssignUserToGroupAsync(AppAdminUser.AppClient, groupView.Guid, accessToken.Subject);
+        Console.WriteLine(assignedResp);
+        return new TestUserBundle(accessToken, apiHttpClient);
+    }
+
+    private async Task<(string? accessTokenString, JwtSecurityToken accessToken)> GetKcTokenRequestAsync(
+        KcAndAppClientOptions options, string username, string password)
+    {
         var kcHttpClient = new HttpClient()
         {
-            BaseAddress = new Uri("http://localhost:8080")
+            BaseAddress = new Uri(options.KcBaseUrl)
         };
         var data = new Dictionary<string, string>
         {
-            ["username"] = dto.Username,
-            ["password"] = dto.Password,
+            ["username"] = username,
+            ["password"] = password,
             ["grant_type"] = "password",
-            ["client_id"] = "lumenforge-test",
+            ["client_id"] = options.KcTestClientId,
         };
-
         using var content = new FormUrlEncodedContent(data);
+        var url = $"/realms/{options.KcRealm}/protocol/openid-connect/token";
+        var resp = await kcHttpClient.PostAsync(url, content, CancellationToken.None);
 
-        try
+        var body = await resp.Content.ReadAsStringAsync(CancellationToken.None);
+        var respJson = JsonSerializer.Deserialize<JsonElement>(body);
+        if (!resp.IsSuccessStatusCode)
+            throw new InvalidOperationException(
+                $"Keycloak token request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}\n{body}");
+
+        var accessTokenString = respJson.GetProperty("access_token").GetString()!;
+        var accessToken = new JwtSecurityTokenHandler().ReadJwtToken(accessTokenString);
+
+        return accessTokenString == null
+            ? throw new KeycloakException("Failed to get access token")
+            : (accessTokenString, accessToken);
+    }
+
+    public async Task<GroupView> CreateGroupAsync(HttpClient adminClient, string? name = null, string? description = null)
+    {
+        var groupName = name ?? "Test Group " + Guid.NewGuid();
+        var groupDesc = description ?? "Test Group Description " + Guid.NewGuid() + " Extended";
+
+        var response = await adminClient.PutAsJsonAsync("/api/v1/auth/groups", new AddGroupDto
         {
-            var url = $"/realms/lumenforge-realm/protocol/openid-connect/token";
-            var resp = await kcHttpClient.PostAsync(url, content, CancellationToken.None);
+            Name = groupName,
+            Description = groupDesc,
+            Roles = []
+        });
 
-            var body = await resp.Content.ReadAsStringAsync(CancellationToken.None);
-            var respJson = JsonSerializer.Deserialize<JsonElement>(body);
-            if (!resp.IsSuccessStatusCode)
-                throw new InvalidOperationException(
-                    $"Keycloak token request failed: {(int)resp.StatusCode} {resp.ReasonPhrase}\n{body}");
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
+        var groupView = await JsonSerializer.DeserializeAsync<GroupView>(
+            await response.Content.ReadAsStreamAsync(),
+            Json.GetJsonSerializerOptions());
+        groupView.Should().NotBeNull();
+        return groupView!;
+    }
 
-            var adminToken = respJson.GetProperty("access_token").GetString();
+    public async Task<GroupView> CreateGroupWithRolesAsync(
+        HttpClient adminClient,
+        IEnumerable<Role> roles,
+        string name,
+        string description)
+    {
+        var group = await CreateGroupAsync(adminClient, name, description);
 
-            var AccessTokenString = respJson.GetProperty("access_token").GetString()!;
-            var AccessToken = new JwtSecurityTokenHandler().ReadJwtToken(AccessTokenString);
-
-            if (adminToken != null)
-            {
-                apiHttpClient.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", AccessTokenString);
-                var roles = await apiHttpClient.GetAsync("api/v1/auth/roles", CancellationToken.None);
-                Console.WriteLine(roles);
-            }
-        }catch(Exception e)
+        foreach (var role in roles.Distinct())
         {
-            Console.WriteLine(e);
+            var assignResp = await adminClient.PutAsync($"/api/v1/auth/groups/{group.Guid}/roles/{role}", null);
+            assignResp.StatusCode.Should().Be(HttpStatusCode.NoContent);
         }
+
+        return group;
+    }
+
+    public Task<HttpResponseMessage> AssignUserToGroupAsync(
+        HttpClient adminClient,
+        Guid groupGuid,
+        string userKcId,
+        string? assigneeKcId = null)
+    {
+        return adminClient.PutAsJsonAsync($"/api/v1/auth/groups/{groupGuid}/users", new AssignUserToGroupDto
+        {
+            assigneeKcId = assigneeKcId,
+            userKcId = userKcId
+        });
     }
 
     public Task DisposeAsync()
