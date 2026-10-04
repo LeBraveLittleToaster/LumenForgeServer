@@ -1,3 +1,4 @@
+using Humanizer;
 using LumenForgeServer.Auth.Domain;
 using LumenForgeServer.Auth.Dto.Command;
 using LumenForgeServer.Auth.Dto.Views;
@@ -126,5 +127,39 @@ public class UserGroupSeeder(UserService userService, GroupService groupService,
                 await groupService.AssignUserToGroup(null, kcId, group.Guid, ct);
             }
         }
+
+        //User with no groups
+        var dtoNoGroups = new AddKcUserDto
+        {
+            Email = $"nogroups@test.de",
+            FirstName = $"Mister No",
+            LastName = $"Groups",
+            Username = $"nogroups",
+            Password = "nogroups",
+        };
+        var kcIdNoGroups = await kcService.AddUserToKeycloak(dtoNoGroups, ct);
+        await userService.AddUser(kcIdNoGroups, dtoNoGroups, ct);
+
+
+        // User that can only see and manage rentals
+
+        var dtoRentalOnly= new AddKcUserDto
+        {
+            Email = $"rentalonly@test.de",
+            FirstName = $"Mister Rental",
+            LastName = $"Only",
+            Username = $"rentalonly",
+            Password = "rentalonly",
+        };
+        var kcIdRentalOnly = await kcService.AddUserToKeycloak(dtoRentalOnly, ct);
+        await userService.AddUser(kcIdRentalOnly, dtoRentalOnly, ct);
+        
+        var groupIdRentalOnly = await groupService.AddGroup(new AddGroupDto
+        {
+            Name = "RentalOnly",
+            Description = "Can only see and manage rentals",
+            Roles = [Permissions.RentalCreate],
+        }, ct);
+        await groupService.AssignUserToGroup(null, kcIdRentalOnly, groupIdRentalOnly.Guid, ct);
     }
 }
